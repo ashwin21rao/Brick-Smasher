@@ -11,7 +11,7 @@ class Sprite:
         self.color = color
 
     def render(self, game_window):
-        print("HERE (sprite render)", self, self.x, self.width, "\r")
+        # print("HERE (sprite render)", self, self.x, self.width, "\r")
         game_width = game_window.shape[1]
 
         game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
@@ -77,3 +77,9 @@ class Ball(Sprite):
 
         self.x += round(self.speed * np.cos(np.arctan(self.slope)))
         self.y += round(self.speed * np.sin(np.arctan(self.slope)))
+
+
+class Block(Sprite):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color):
+        super().__init__(x_coordinate, y_coordinate, width, height, color)
+        print(x_coordinate, y_coordinate)
