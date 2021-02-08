@@ -63,6 +63,7 @@ class Game:
             # clear screen
             os.system("clear")
 
+            # print full screen
             for h in range(self.rows):
                 for w in range(self.columns):
                     print(self.screen[h][w], end="")
@@ -79,3 +80,27 @@ class Game:
                     print(self.game_window[h][w], end="")
 
                 print(f"\033[{self.top_margin + self.height};0H\n")
+
+    # check collision between 2 sprites
+    def collideRect(self, sprite1, sprite2):
+        # print(f"x {sprite1.x} y {sprite1.y} w {sprite1.width} h {sprite1.height}, x {sprite2.x} y {sprite2.y} w {sprite2.width} h {sprite2.x}", end="")
+
+        return (sprite1.x + sprite1.width >= sprite2.x and sprite1.x <= sprite2.x + sprite2.width) and \
+               (sprite1.y + sprite1.height >= sprite2.y and sprite1.y <= sprite2.y + sprite2.height)
+
+    # check collision between a sprite and a sprite group and return all collided sprites
+    def spriteCollide(self, sprite, sprite_group):
+        collided_sprites = []
+        for sp in sprite_group:
+            if self.collideRect(sprite, sp):
+                collided_sprites.append(sp)
+
+        return collided_sprites
+
+    # check collision between a sprite and a sprite group and return first collided sprite
+    def spriteCollideAny(self, sprite, sprite_group):
+        for sp in sprite_group:
+            if self.collideRect(sprite, sp):
+                return sp
+
+        return None

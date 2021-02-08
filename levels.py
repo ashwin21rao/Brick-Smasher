@@ -1,5 +1,6 @@
 from sprites import Block
 
+
 class Levels:
     @staticmethod
     def level1(game_width):

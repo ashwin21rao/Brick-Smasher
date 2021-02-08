@@ -1,26 +1,3 @@
-# from colorama import init, Fore, Back, Style
-#
-# init()
-#
-#
-# def printReset(str, sep=" ", end="\n"):
-#     print(str + Back.RESET, sep=sep, end=end)
-#
-#
-# printReset(f"{Back.RED}     ", end=" ")
-# printReset(f"{Back.GREEN}     ", end=" ")
-# printReset(f"{Back.BLUE}     ", end=" ")
-# printReset(f"{Back.YELLOW}     ", end="\n")
-#
-#
-# def drawRect(w, h):
-#     print(Back.BLUE)
-#     printReset(f"{' ' * w}\n" * h)
-#
-#
-# drawRect(7, 3)
-# print("Hello", "Hi")
-
 # print("\x1b[8;40;120t") // columns 120, rows 40
 
 import os
@@ -71,6 +48,20 @@ def createBall(paddle):
     sprites.append(ball)
 
 
+def checkCollision(ball, sprite_group, sprite_group_type):
+    collided_sprites = game.spriteCollide(ball, sprite_group)
+    if not collided_sprites:
+        return False
+
+    print(collided_sprites, end="")
+    if sprite_group_type == "block":
+        ball.handleCollision(collided_sprites[0])
+        for sprite in collided_sprites:
+            sprite.handleCollision()
+
+    return True
+
+
 def gameloop():
     rt.enableRawMode()
     rt.hideCursor()
@@ -84,9 +75,6 @@ def gameloop():
 
     running = True
     while running:
-        # display screen
-        game.printScreen()
-
         # if key has been hit
         if rt.kbhit():
             char = rt.getInputChar()
@@ -105,8 +93,13 @@ def gameloop():
         for ball in balls:
             ball.move(game.game_window)
 
+        # handle collision
+        for ball in balls:
+            checkCollision(ball, blocks, "block")
+
         # update display
         game.updateScreen(sprites)
+        game.printScreen()
 
         # gameloop runs based on FPS
         time.sleep(1 / game.FPS)

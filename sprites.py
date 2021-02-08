@@ -68,10 +68,10 @@ class Ball(Sprite):
         self.clearOldPosition(game_window)
 
         # move ball
-        if self.y >= game_height - self.height or self.y <= 0:
+        if self.y + self.height >= game_height or self.y <= 0:
             self.slope *= -1
 
-        if self.x >= game_width - self.width or self.x <= 0:
+        if self.x + self.width >= game_width or self.x <= 0:
             self.slope *= -1
             self.speed *= -1
 
@@ -79,7 +79,41 @@ class Ball(Sprite):
         self.y += round(self.speed * np.sin(np.arctan(self.slope)))
 
 
+    def collideHorizontal(self):
+        pass
+
+    def collideVertical(self):
+        pass
+
+    def handleCollision(self, sprite):
+        # # prevent collision with vertical from becoming horizontal
+        # if self.x + self.width == sprite.x or self.x == sprite.x + sprite.width:
+        #     self.slope *= -1
+        #     self.speed *= -1
+
+        # collision with horizontal sides of sprite rect
+        if self.y + self.height >= sprite.y or self.y <= sprite.y + sprite.height:
+            self.slope *= -1
+
+        # collision with vertical sides of sprite rect
+        elif self.x + self.width >= sprite.x or self.x <= sprite.x + sprite.width:
+            self.slope *= -1
+            self.speed *= -1
+
+
 class Block(Sprite):
+    colors = ["green", "yellow", "red", "blue"]
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
-        print(x_coordinate, y_coordinate)
+        self.strength = Block.colors.index(color)
+
+    def handleCollision(self):
+        if self.color == "blue":
+            return True
+
+        self.strength -= 1
+        if self.strength > -1:
+            self.color = Block.colors[self.strength]
+            return True
+        return False
