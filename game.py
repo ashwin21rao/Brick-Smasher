@@ -22,7 +22,7 @@ class Game:
         self.game_window = self.screen[self.top_margin: self.top_margin + self.height,
                                        self.left_margin: self.left_margin + self.width]
 
-        self.FPS = 40
+        self.FPS = 30
         self.initGameBox()
 
     def initGameBox(self):

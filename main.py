@@ -22,6 +22,7 @@ powerups = []
 obstacles = []
 
 
+# -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
     block_arr = getattr(Levels, f"level{level}")(game_width)
     for block in block_arr:
@@ -33,7 +34,7 @@ def createPaddle(game_width, game_height):
     height = 1
 
     global paddle
-    paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white", x_speed=2)
+    paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white")
 
 
 def createBall(paddle):
@@ -44,6 +45,32 @@ def createBall(paddle):
     balls.append(ball)
 
 
+# -------------------------------------------------------------------------------------------------------
+def movePaddle(char, game_window, ball, paddle, ball_launched=True):
+    movable_sprites = [paddle]
+    if not ball_launched:
+        movable_sprites.append(ball)
+
+    # check for 'a'/'j' and 'd'/'l' keys
+    if char == 97 or char == 106:
+        for sprite in movable_sprites:
+            sprite.moveLeft(game_window)
+    elif char == 100 or char == 108:
+        for sprite in movable_sprites:
+            sprite.moveRight(game_window)
+
+
+def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
+    # check for 'w'/'i' key
+    if char == 119 or char == 105:
+        ball.launch(x_speed, y_speed)
+        paddle.setSpeed(2)
+        return True
+
+    return False
+
+
+# -------------------------------------------------------------------------------------------------------
 # WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
 def handleBlockCollision(ball, block, game_window):
     global blocks
@@ -85,10 +112,7 @@ def checkBlockCollision(ball, game_window):
             ball.handleCollision(block, obstacle="block")
 
 
-def checkPaddleCollision(ball):
-    pass
-
-
+# -------------------------------------------------------------------------------------------------------
 def updateDisplay():
     # update display
     sprites = blocks + balls + [paddle] + powerups
@@ -111,6 +135,7 @@ def gameloop():
     game.printScreen(full=True)
 
     running = True
+    ball_launched=False
     while running:
         # if key has been hit
         if rt.kbhit():
@@ -123,12 +148,17 @@ def gameloop():
                 rt.resetKeyboardDelay()
                 running = False
 
-            # move paddle
-            paddle.move(char, game.game_window)
+            # move paddle based on keypress
+            movePaddle(char, game.game_window, balls[0], paddle, ball_launched)
 
-        # move sprites
-        for ball in balls:
-            ball.move(game.game_window)
+            # launch ball based on keypress
+            if not ball_launched:
+                ball_launched = launchBall(char, balls[0], paddle)
+
+        # move balls
+        if ball_launched:
+            for ball in balls:
+                ball.move(game.game_window)
 
         # handle collision
         for ball in balls:
@@ -137,8 +167,6 @@ def gameloop():
 
         # update display based on FPS
         updateDisplay()
-        # if not running:
-        #     os.system("clear")
 
 gameloop()
 

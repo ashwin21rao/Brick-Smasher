@@ -3,6 +3,7 @@ import numpy as np
 from colorama import Back
 
 
+# generic sprite
 class Sprite:
     def __init__(self, x_coordinate, y_coordinate, width, height, color):
         self.x = x_coordinate
@@ -27,40 +28,58 @@ class Sprite:
             game_window[self.y: self.y + self.height, self.x + self.width] = " "
 
 
-class Paddle(Sprite):
+# generic sprite movable with arrow keys (left and right)
+class MovableSprite(Sprite):
     def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
         self.x_speed = x_speed
 
-    def move(self, char, game_window):
-        game_width = game_window.shape[1]
+    def moveLeft(self, game_window):
+        self.clearOldPosition(game_window)
+        self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
 
-        # clear old position
+    def moveRight(self, game_window):
         self.clearOldPosition(game_window)
 
-        # check for 'a' and 'd' keys
-        if char == 97:
-            self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
-        elif char == 100:
-            self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
-                else game_width - self.width  # move right
+        game_width = game_window.shape[1]
+        self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
+            else game_width - self.width  # move right
 
-        # check for left and right arrow key
-        if char == 27 and ord(sys.stdin.read(1)) == 91:
-            char = ord(sys.stdin.read(1))
-            if char == 67:
-                self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
-                    else game_width - self.width  # move right
-            elif char == 68:
-                self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
-
-
-class Ball(Sprite):
-    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=1, initial_slope=1):
-        super().__init__(x_coordinate, y_coordinate, width, height, color)
+    def setSpeed(self, x_speed):
         self.x_speed = x_speed
+
+
+class Paddle(MovableSprite):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color, x_speed)
+
+    # def move(self, char, game_window):
+    #     game_width = game_window.shape[1]
+    #
+    #     # clear old position
+    #     self.clearOldPosition(game_window)
+    #
+    #     # check for 'a' and 'd' keys
+    #     if char == 97:
+    #         self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
+    #     elif char == 100:
+    #         self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
+    #             else game_width - self.width  # move right
+    #
+    #     # check for left and right arrow key
+    #     if char == 27 and ord(sys.stdin.read(1)) == 91:
+    #         char = ord(sys.stdin.read(1))
+    #         if char == 67:
+    #             self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
+    #                 else game_width - self.width  # move right
+    #         elif char == 68:
+    #             self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
+
+
+class Ball(MovableSprite):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color, x_speed)
         self.y_speed = y_speed
-        self.slope = initial_slope
 
     def reflectHorizontal(self):
         self.y_speed *= -1
@@ -106,23 +125,6 @@ class Ball(Sprite):
 
         return False
 
-    def move(self, game_window):
-        game_height, game_width = game_window.shape
-
-        # clear old position
-        self.clearOldPosition(game_window)
-
-        # move ball
-        if self.y + self.height >= game_height or self.y <= 0:
-            self.reflectHorizontal()
-
-        if self.x + self.width >= game_width or self.x <= 0:
-            self.reflectVertical()
-
-        self.x += self.x_speed
-        self.y += self.y_speed
-
-
     def handleCollision(self, sprite, obstacle="block"):
         if obstacle == "block":
             if self.checkVerticalCollision(sprite):
@@ -139,6 +141,26 @@ class Ball(Sprite):
 
         elif obstacle == "powerup":
             pass
+
+    def move(self, game_window):
+        game_height, game_width = game_window.shape
+
+        # clear old position
+        self.clearOldPosition(game_window)
+
+        # move ball
+        if self.y + self.height >= game_height or self.y <= 0:
+            self.reflectHorizontal()
+
+        if self.x + self.width >= game_width or self.x <= 0:
+            self.reflectVertical()
+
+        self.x += self.x_speed
+        self.y += self.y_speed
+
+    def launch(self, x_speed=1, y_speed=-1):
+        self.x_speed = x_speed
+        self.y_speed = y_speed
 
 
 class Block(Sprite):
