@@ -83,8 +83,6 @@ class Game:
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
-        # print(f"x {sprite1.x} y {sprite1.y} w {sprite1.width} h {sprite1.height}, x {sprite2.x} y {sprite2.y} w {sprite2.width} h {sprite2.x}", end="")
-
         return (sprite1.x + sprite1.width >= sprite2.x and sprite1.x <= sprite2.x + sprite2.width) and \
                (sprite1.y + sprite1.height >= sprite2.y and sprite1.y <= sprite2.y + sprite2.height)
 

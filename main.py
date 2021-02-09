@@ -20,14 +20,12 @@ blocks = []
 balls = []
 powerups = []
 obstacles = []
-sprites = []
 
 
 def createBlocks(game_width, level):
     block_arr = getattr(Levels, f"level{level}")(game_width)
     for block in block_arr:
         blocks.append(block)
-        sprites.append(block)
 
 
 def createPaddle(game_width, game_height):
@@ -35,8 +33,7 @@ def createPaddle(game_width, game_height):
     height = 1
 
     global paddle
-    paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white", speed=2)
-    sprites.append(paddle)
+    paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white", x_speed=2)
 
 
 def createBall(paddle):
@@ -45,21 +42,61 @@ def createBall(paddle):
 
     ball = Ball(paddle.x + paddle.width // 2 - width // 2, paddle.y - 1, width, height, "cyan")
     balls.append(ball)
-    sprites.append(ball)
 
 
-def checkCollision(ball, sprite_group, sprite_group_type):
-    collided_sprites = game.spriteCollide(ball, sprite_group)
-    if not collided_sprites:
-        return False
+# WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
+def handleBlockCollision(ball, block, game_window):
+    global blocks
+    block.handleCollision(game_window)
+    if block.getStrength() < 0:
+        blocks = [b for b in blocks if not (b.x == block.x and b.y == block.y)]
 
-    print(collided_sprites, end="")
-    if sprite_group_type == "block":
-        ball.handleCollision(collided_sprites[0])
-        for sprite in collided_sprites:
-            sprite.handleCollision()
 
-    return True
+def checkBlockCollision(ball, game_window):
+    global blocks
+    collided_blocks = game.spriteCollide(ball, blocks)
+    if not collided_blocks:
+        return
+
+    # collision with 3 blocks simultaneously (corner collision)
+    if len(collided_blocks) == 3:
+        for block in collided_blocks:
+            handleBlockCollision(ball, block, game_window)
+        ball.reflectHorizontalAndVertical()
+        return
+
+    # handle collision with sides (not corners)
+    for block in collided_blocks:
+        if not ball.checkCornerCollision(block):
+            handleBlockCollision(ball, block, game_window)
+            ball.handleCollision(block, obstacle="block")
+            return
+
+    # handle simultaneous vertical collision with corners of 2 blocks
+    if len(collided_blocks) == 2:
+        for block in collided_blocks:
+            handleBlockCollision(ball, block, game_window)
+        ball.reflectVertical()
+    else:
+        # handle collision with corner of a single block
+        block = collided_blocks[0]
+        if ball.handleCornerCollision(block):
+            handleBlockCollision(ball, block, game_window)
+            ball.handleCollision(block, obstacle="block")
+
+
+def checkPaddleCollision(ball):
+    pass
+
+
+def updateDisplay():
+    # update display
+    sprites = blocks + balls + [paddle] + powerups
+    game.updateScreen(sprites)
+    game.printScreen()
+
+    # gameloop runs based on FPS
+    time.sleep(1 / game.FPS)
 
 
 def gameloop():
@@ -69,7 +106,7 @@ def gameloop():
 
     createPaddle(game.width, game.height)
     createBall(paddle)
-    createBlocks(game.width, 1)
+    createBlocks(game.width, 3)
 
     game.printScreen(full=True)
 
@@ -95,15 +132,13 @@ def gameloop():
 
         # handle collision
         for ball in balls:
-            checkCollision(ball, blocks, "block")
+            checkBlockCollision(ball, game.game_window)
+            ball.handleCollision(paddle, obstacle="paddle")
 
-        # update display
-        game.updateScreen(sprites)
-        game.printScreen()
-
-        # gameloop runs based on FPS
-        time.sleep(1 / game.FPS)
-
+        # update display based on FPS
+        updateDisplay()
+        # if not running:
+        #     os.system("clear")
 
 gameloop()
 
