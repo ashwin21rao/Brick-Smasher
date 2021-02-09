@@ -4,7 +4,7 @@ from colorama import Back
 
 
 class Game:
-    def __init__(self, width=75, height=35):
+    def __init__(self, width=75, height=34):
         self.width = width  # width of game screen
         self.height = height  # height of game screen
 
@@ -22,7 +22,7 @@ class Game:
         self.game_window = self.screen[self.top_margin: self.top_margin + self.height,
                                        self.left_margin: self.left_margin + self.width]
 
-        self.FPS = 30
+        self.FPS = 60
         self.initGameBox()
 
     def initGameBox(self):

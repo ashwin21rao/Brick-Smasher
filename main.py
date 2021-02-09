@@ -5,11 +5,11 @@ import sys
 import time
 import numpy as np
 from colorama import Fore, Back, Style
+from pygame import mixer
 from game import Game
 from sprites import Paddle, Ball, Block
 from levels import Levels
 from rawterminal import RawTerminal as rt
-
 
 # game object
 game = Game()
@@ -72,14 +72,15 @@ def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
 
 # -------------------------------------------------------------------------------------------------------
 # WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
-def handleBlockCollision(ball, block, game_window):
+def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
-    block.handleCollision(game_window)
+    block.handleCollision(game_window, audio_sounds)
     if block.getStrength() < 0:
-        blocks = [b for b in blocks if not (b.x == block.x and b.y == block.y)]
+        blocks.remove(block)
+        # blocks = [b for b in blocks if not (b.x == block.x and b.y == block.y)]
 
 
-def checkBlockCollision(ball, game_window):
+def checkBlockCollision(ball, game_window, audio_sounds):
     global blocks
     collided_blocks = game.spriteCollide(ball, blocks)
     if not collided_blocks:
@@ -88,27 +89,27 @@ def checkBlockCollision(ball, game_window):
     # collision with 3 blocks simultaneously (corner collision)
     if len(collided_blocks) == 3:
         for block in collided_blocks:
-            handleBlockCollision(ball, block, game_window)
+            handleBlockCollision(block, game_window, audio_sounds)
         ball.reflectHorizontalAndVertical()
         return
 
     # handle collision with sides (not corners)
     for block in collided_blocks:
         if not ball.checkCornerCollision(block):
-            handleBlockCollision(ball, block, game_window)
+            handleBlockCollision(block, game_window, audio_sounds)
             ball.handleCollision(block, obstacle="block")
             return
 
     # handle simultaneous vertical collision with corners of 2 blocks
     if len(collided_blocks) == 2:
         for block in collided_blocks:
-            handleBlockCollision(ball, block, game_window)
+            handleBlockCollision(block, game_window, audio_sounds)
         ball.reflectVertical()
     else:
         # handle collision with corner of a single block
         block = collided_blocks[0]
         if ball.handleCornerCollision(block):
-            handleBlockCollision(ball, block, game_window)
+            handleBlockCollision(block, game_window, audio_sounds)
             ball.handleCollision(block, obstacle="block")
 
 
@@ -123,10 +124,23 @@ def updateDisplay():
     time.sleep(1 / game.FPS)
 
 
-def gameloop():
+def initialSetup():
     rt.enableRawMode()
     rt.hideCursor()
     rt.removeKeyboardDelay()
+
+    # play music
+    mixer.init()
+    mixer.music.load("extras/background.wav")
+    mixer.music.play(loops=-1)
+
+    brick_sound_1 = mixer.Sound("extras/brick.wav")
+    brick_sound_2 = mixer.Sound("extras/indestructible_brick.wav")
+    return {"regular_brick_sound": brick_sound_1, "indestructible_brick_sound": brick_sound_2}
+
+
+def gameloop():
+    brick_sounds = initialSetup()
 
     createPaddle(game.width, game.height)
     createBall(paddle)
@@ -135,7 +149,12 @@ def gameloop():
     game.printScreen(full=True)
 
     running = True
-    ball_launched=False
+    ball_launched = False
+
+    # to decrease speed of ball movement on screen wrt FPS
+    ball_speed_coefficient = 2
+    move_ball_counter = 0
+
     while running:
         # if key has been hit
         if rt.kbhit():
@@ -155,18 +174,26 @@ def gameloop():
             if not ball_launched:
                 ball_launched = launchBall(char, balls[0], paddle)
 
-        # move balls
-        if ball_launched:
-            for ball in balls:
-                ball.move(game.game_window)
+        if move_ball_counter == 0 and ball_launched:
 
-        # handle collision
-        for ball in balls:
-            checkBlockCollision(ball, game.game_window)
-            ball.handleCollision(paddle, obstacle="paddle")
+            # move balls
+            for ball in balls:
+                if not ball.move(game.game_window):
+                    balls.remove(ball)
+
+            # handle collision
+            for ball in balls:
+                checkBlockCollision(ball, game.game_window, brick_sounds)
+                ball.handleCollision(paddle, obstacle="paddle")
 
         # update display based on FPS
         updateDisplay()
+        move_ball_counter = (move_ball_counter + 1) % ball_speed_coefficient
+
+        # no more balls left
+        if not balls:
+            running = False
+
 
 gameloop()
 
