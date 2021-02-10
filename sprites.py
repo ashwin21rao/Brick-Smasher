@@ -16,14 +16,16 @@ class Sprite:
         # print("HERE (sprite render)", self, self.x, self.width, "\r")
         game_width = game_window.shape[1]
 
-        game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
+        if self.x < game_width:
+            game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
         if self.x + self.width < game_width:
             game_window[self.y: self.y + self.height, self.x + self.width] = Back.__getattribute__("RESET") + " "
 
     def clearOldPosition(self, game_window):
         game_width = game_window.shape[1]
 
-        game_window[self.y: self.y + self.height, self.x] = " "
+        if self.x < game_width:
+            game_window[self.y: self.y + self.height, self.x] = " "
         if self.x + self.width < game_width:
             game_window[self.y: self.y + self.height, self.x + self.width] = " "
 
@@ -70,11 +72,17 @@ class Ball(MovableSprite):
         self.y_speed *= -1
 
     def checkHorizontalCollision(self, sprite):
-        return (self.y + self.height == sprite.y or self.y == sprite.y + sprite.height) and \
+        # return (self.y + self.height in range(sprite.y, sprite.y+2) and self.y_speed > 0 or self.y in range (sprite.y+sprite.height-1, sprite.y+sprite.height+1) and self.y_speed < 0) and \
+        #        (self.x + self.width - 1 >= sprite.x and self.x <= sprite.x + sprite.width - 1)
+
+        return (self.y + self.height == sprite.y and self.y_speed > 0 or self.y == sprite.y + sprite.height and self.y_speed < 0) and \
                (self.x + self.width - 1 >= sprite.x and self.x <= sprite.x + sprite.width - 1)
 
     def checkVerticalCollision(self, sprite):
-        return (self.x + self.width == sprite.x or self.x == sprite.x + sprite.width) and \
+        # return (self.x + self.width in range(sprite.x, sprite.x+3) and self.x_speed > 0 or self.x in range (sprite.x+sprite.width-1, sprite.x+sprite.width+2) and self.x_speed < 0) and \
+        #        (self.y + self.height - 1 >= sprite.y and self.y <= sprite.y + sprite.height - 1)
+
+        return (self.x + self.width == sprite.x and self.x_speed > 0 or self.x == sprite.x + sprite.width and self.x_speed < 0) and \
                (self.y + self.height - 1 >= sprite.y and self.y <= sprite.y + sprite.height - 1)
 
     def checkCornerCollision(self, sprite):
@@ -103,55 +111,85 @@ class Ball(MovableSprite):
 
         return False
 
-    def handleCollision(self, sprite, obstacle="block"):
+    def handleCollision(self, sprite=None, obstacle="block"):
         if obstacle == "block":
             if self.checkVerticalCollision(sprite):
                 self.reflectVertical()
             elif self.checkHorizontalCollision(sprite):
                 self.reflectHorizontal()
             elif self.checkCornerCollision(sprite) and self.handleCornerCollision(sprite):
-                self.reflectHorizontalAndVertical()
+                self.reflectHorizontal()
 
         elif obstacle == "paddle":
             if self.checkHorizontalCollision(sprite) or \
                     (self.checkCornerCollision(sprite) and self.handleCornerCollision(sprite)):
                 self.reflectHorizontal()
-                if self.x == sprite.x + sprite.width // 2 - self.width // 2:
-                    self.x_speed = 0
-                elif self.x > sprite.x + sprite.width // 2 - self.width // 2:
-                    self.x_speed = 1
-                else:
-                    self.x_speed = -1
+                # print("hereeeeee", end="")
 
-        elif obstacle == "powerup":
-            pass
+                mid = sprite.x + sprite.width // 2 - self.width // 2
+                # if self.x == mid:
+                #     self.x_speed = 0
+                # elif self.x > mid + 3:
+                #     self.x_speed = 2
+                # elif self.x > mid:
+                #     self.x_speed = 2
+                # elif self.x + self.width - 1 < mid - 2:
+                #     self.x_speed = -2
+                # elif self.x + self.width - 1 < mid + 1:
+                #     self.x_speed = -2
 
-    def move(self, game_window):
+                for x in range(self.x - 2, self.x + self.width + 1):
+                    if self.x == x:
+                        self.x_speed = (x - mid + (1 if x > mid else -1)) // 2
+
+                # for x in range(mid+1, self.x + self.width + 1):
+                #     if self.x == x:
+                #         self.x_speed = (x - mid + 1) / 2
+                # for x in range(self.x - 2, mid):
+                #     if self.x == x:
+                #         self.x_speed = (x - mid - 1) / 2
+
+                # if self.x == sprite.x + sprite.width // 2 - self.width // 2:
+                #     self.x_speed = 0
+                # elif self.x > sprite.x + sprite.width // 2 - self.width // 2:
+                #     self.x_speed = 2
+                # else:
+                #     self.x_speed = -2
+
+    def handleWallCollision(self, game_window):
         game_height, game_width = game_window.shape
-
-        # clear old position
-        self.clearOldPosition(game_window)
+        collided = False
 
         # bounce off side walls
         if self.x + self.width >= game_width or self.x <= 0:
             self.reflectVertical()
+            collided = True
 
         # bounce off top wall
-        if self.y <= 0:
+        if self.y <= 0 or self.y + self.height >= game_height:
             self.reflectHorizontal()
+            collided = True
 
-        # hit bottom wall (level failed)
-        if self.y + self.height >= game_height:
-            return False
+        return collided
 
-        self.x += self.x_speed
-        self.y += self.y_speed
+    def move(self, game_window, move_y=True):
+        # print(f"{self.x}  {self.y}  ", end="")
 
-        return True
+        # clear old position
+        self.clearOldPosition(game_window)
+
+        # move ball
+        if self.x_speed != 0:
+            self.x += self.x_speed // abs(self.x_speed)
+        if move_y:
+            self.y += self.y_speed
 
     def launch(self, x_speed=1, y_speed=-1):
         self.x_speed = x_speed
         self.y_speed = y_speed
+
+    def isDead(self, game_height):
+        return self.y + self.height >= game_height
 
 
 class Block(Sprite):

@@ -71,6 +71,13 @@ def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
 
 
 # -------------------------------------------------------------------------------------------------------
+# check collision with block, paddle or wall
+def checkCollision(ball, game_window, audio_sounds):
+    return checkBlockCollision(ball, game_window, audio_sounds) or \
+           ball.handleCollision(paddle, obstacle="paddle") or \
+           ball.handleWallCollision(game_window)
+
+
 # WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
 def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
@@ -84,33 +91,37 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     global blocks
     collided_blocks = game.spriteCollide(ball, blocks)
     if not collided_blocks:
-        return
+        return False
 
     # collision with 3 blocks simultaneously (corner collision)
     if len(collided_blocks) == 3:
         for block in collided_blocks:
             handleBlockCollision(block, game_window, audio_sounds)
         ball.reflectHorizontalAndVertical()
-        return
+        return True
 
     # handle collision with sides (not corners)
     for block in collided_blocks:
         if not ball.checkCornerCollision(block):
             handleBlockCollision(block, game_window, audio_sounds)
             ball.handleCollision(block, obstacle="block")
-            return
+            return True
 
     # handle simultaneous vertical collision with corners of 2 blocks
     if len(collided_blocks) == 2:
         for block in collided_blocks:
             handleBlockCollision(block, game_window, audio_sounds)
         ball.reflectVertical()
-    else:
-        # handle collision with corner of a single block
-        block = collided_blocks[0]
-        if ball.handleCornerCollision(block):
-            handleBlockCollision(block, game_window, audio_sounds)
-            ball.handleCollision(block, obstacle="block")
+        return True
+
+    # handle collision with corner of a single block
+    block = collided_blocks[0]
+    if ball.handleCornerCollision(block):
+        handleBlockCollision(block, game_window, audio_sounds)
+        ball.handleCollision(block, obstacle="block")
+        return True
+
+    return False
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -131,7 +142,7 @@ def initialSetup():
 
     # play music
     mixer.init()
-    mixer.music.load("extras/background.wav")
+    mixer.music.load("extras/background2.wav")
     mixer.music.play(loops=-1)
 
     brick_sound_1 = mixer.Sound("extras/brick.wav")
@@ -144,7 +155,7 @@ def gameloop():
 
     createPaddle(game.width, game.height)
     createBall(paddle)
-    createBlocks(game.width, 3)
+    createBlocks(game.width, 1)
 
     game.printScreen(full=True)
 
@@ -152,7 +163,7 @@ def gameloop():
     ball_launched = False
 
     # to decrease speed of ball movement on screen wrt FPS
-    ball_speed_coefficient = 2
+    ball_speed_coefficient = 4
     move_ball_counter = 0
 
     while running:
@@ -176,15 +187,17 @@ def gameloop():
 
         if move_ball_counter == 0 and ball_launched:
 
-            # move balls
+            # move balls and check collisions
             for ball in balls:
-                if not ball.move(game.game_window):
-                    balls.remove(ball)
-
-            # handle collision
-            for ball in balls:
-                checkBlockCollision(ball, game.game_window, brick_sounds)
-                ball.handleCollision(paddle, obstacle="paddle")
+                for sp in range(0, abs(ball.x_speed) + (ball.x_speed == 0)):
+                    ball.move(game.game_window, move_y=not sp)
+                    if ball.isDead(game.game_window.shape[0]):
+                        balls.remove(ball)
+                        break
+                    elif checkCollision(ball, game.game_window, brick_sounds):
+                        break
+                    # time.sleep(0.3)
+                    # updateDisplay()
 
         # update display based on FPS
         updateDisplay()
