@@ -1,6 +1,8 @@
 import os
 import numpy as np
-from colorama import Back
+import time
+from datetime import datetime, timedelta
+from colorama import Fore, Back, Style
 
 
 class Game:
@@ -23,32 +25,71 @@ class Game:
                                        self.left_margin: self.left_margin + self.width]
 
         self.FPS = 60
-        self.initGameBox()
+        self.total_levels = 3
+        self.level = 1
+        self.lives = 3
+        self.score = 0
+        self.start_time = None
 
-    def initGameBox(self):
-        # title
-        title = "BRICK SMASH!"
-        title_margin = self.left_margin + (self.width - len(title)) // 2
-        self.screen[self.top_margin - 2, title_margin: title_margin + len(title)] = list(title)
+    def init(self):
+        self.createGameBox()
+        self.start_time = datetime.now()
 
+    def createGameBox(self):
         # vertical lines
         self.screen[self.top_margin - 1: self.rows - self.top_margin + 1, self.left_margin - 1] = \
-            Back.__getattribute__("RESET") + "\u2503"
+            Back.RESET + "\u2503"
         self.screen[self.top_margin - 1: self.rows - self.top_margin + 1, self.columns - self.left_margin] = \
-            Back.__getattribute__("RESET") + "\u2503"
+            Back.RESET + "\u2503"
 
         # horizontal lines
         self.screen[self.top_margin - 1, self.left_margin - 1: self.columns - self.left_margin + 1] = \
-            Back.__getattribute__("RESET") + "\u2501"
+            Back.RESET + "\u2501"
         self.screen[self.rows - self.top_margin, self.left_margin - 1: self.columns - self.left_margin + 1] = \
-            Back.__getattribute__("RESET") + "\u2501"
+            Back.RESET + "\u2501"
 
         # corners
-        self.screen[self.top_margin - 1, self.left_margin - 1] = Back.__getattribute__("RESET") + "\u250F"
-        self.screen[self.top_margin - 1, self.columns - self.left_margin] = Back.__getattribute__("RESET") + "\u2513"
-        self.screen[self.rows - self.top_margin, self.left_margin - 1] = Back.__getattribute__("RESET") + "\u2517"
+        self.screen[self.top_margin - 1, self.left_margin - 1] = Back.RESET + "\u250F"
+        self.screen[self.top_margin - 1, self.columns - self.left_margin] = Back.RESET + "\u2513"
+        self.screen[self.rows - self.top_margin, self.left_margin - 1] = Back.RESET + "\u2517"
         self.screen[self.rows - self.top_margin, self.columns - self.left_margin] = \
-            Back.__getattribute__("RESET") + "\u251B"
+            Back.RESET + "\u251B"
+
+    def printInfoBar(self):
+        # title
+        title = "BRICK SMASH"
+        title_margin = self.left_margin + (self.width - len(title)) // 2
+        self.screen[self.top_margin - 2, title_margin: title_margin + len(title)] = list(title)
+        self.screen[self.top_margin - 2, title_margin - 1] = Style.BRIGHT + " "
+        self.screen[self.top_margin - 2, title_margin + len(title)] = Style.RESET_ALL + " "
+
+        # time
+        seconds = int((datetime.now() - self.start_time).total_seconds())
+        time_text = "{:0>8}".format(str(timedelta(seconds=seconds)))
+        self.screen[self.top_margin - 2, self.left_margin: self.left_margin + len(time_text)] = list(time_text)
+
+        # score
+        score_text = f"Score: {self.score}"
+        self.screen[self.top_margin - 2, self.columns - self.left_margin - len(score_text) + 2: self.columns - self.left_margin + 2] = list(score_text)
+
+        # level
+        level_text = f"Level: {self.level}"
+        self.screen[self.rows - self.top_margin + 1, self.left_margin: self.left_margin + len(level_text)] = list(level_text)
+
+        # lives
+        lives_text = f"Lives: {self.lives}"
+        self.screen[self.rows - self.top_margin + 1, self.columns - self.left_margin - len(lives_text) + 2: self.columns - self.left_margin + 2] = list(lives_text)
+
+        # print top info bar
+        print(f"\033[{self.top_margin - 2};{self.left_margin}H", end="")
+        for w in range(self.width + 2):
+            print(self.screen[self.top_margin - 2, self.left_margin + w], end="")
+
+        # print bottom info bar
+        print(f"\033[{self.top_margin + self.height + 1};{self.left_margin}H", end="")
+        for w in range(self.width + 2):
+            print(self.screen[self.top_margin + self.height + 1, self.left_margin + w], end="")
+
 
     def updateScreen(self, sprite_list):
         for sprite in sprite_list:
@@ -79,7 +120,9 @@ class Game:
                 for w in range(self.width):
                     print(self.game_window[h][w], end="")
 
-                print(f"\033[{self.top_margin + self.height};0H\n")
+                # print(f"\033[{self.top_margin + self.height};0H\n")
+
+            self.printInfoBar()
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
@@ -102,3 +145,23 @@ class Game:
                 return sp
 
         return None
+
+    def incrementScore(self, block_color):
+        if block_color == "green":
+            self.score += 10
+        elif block_color == "yellow":
+            self.score += 20
+        elif block_color == "red":
+            self.score += 30
+
+    def decreaseLives(self):
+        self.lives -= 1
+
+    def incrementLevel(self):
+        self.level += 1
+
+    def levelComplete(self, blocks):
+        for block in blocks:
+            if block.color != "blue":
+                return False
+        return True

@@ -12,7 +12,7 @@ class Levels:
         max_vertical_blocks = 7
         start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
         start_y = 4
-        colors = ["blue", "red", "green", "yellow", "green", "red", "blue"]
+        colors = ["red", "green", "yellow", "blue", "green", "yellow", "red"]
 
         for r in range(max_vertical_blocks):
             for c in range(max_horizontal_blocks):

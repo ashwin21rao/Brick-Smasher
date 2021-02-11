@@ -1,4 +1,4 @@
-# print("\x1b[8;40;120t") // columns 120, rows 40
+# print("\x1b[8;40;120t") # columns 120, rows 40
 
 import os
 import sys
@@ -13,9 +13,10 @@ from rawterminal import RawTerminal as rt
 
 # game object
 game = Game()
+game.init()
 
 # lists of obstacles
-paddle = type("", (), {})()
+paddle = None
 blocks = []
 balls = []
 powerups = []
@@ -83,8 +84,8 @@ def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
     block.handleCollision(game_window, audio_sounds)
     if block.getStrength() < 0:
+        game.incrementScore(block.original_color)
         blocks.remove(block)
-        # blocks = [b for b in blocks if not (b.x == block.x and b.y == block.y)]
 
 
 def checkBlockCollision(ball, game_window, audio_sounds):
@@ -135,10 +136,36 @@ def updateDisplay():
     time.sleep(1 / game.FPS)
 
 
+def respawn(game_window):
+    if paddle is not None:
+        paddle.clearOldPosition(game_window)
+    createPaddle(game_window.shape[1], game_window.shape[0])
+    createBall(paddle)
+
+
+def advanceLevel(game_window, level):
+    global balls, blocks
+    for block in blocks:
+        block.clearOldPosition(game_window)
+    for ball in balls:
+        ball.clearOldPosition(game_window)
+    blocks = []
+    balls = []
+
+    createBlocks(game.width, level)
+    respawn(game_window)
+
+
 def initialSetup():
     rt.enableRawMode()
     rt.hideCursor()
     rt.removeKeyboardDelay()
+
+    # create sprites
+    advanceLevel(game.game_window, 1)
+
+    # render screen
+    game.printScreen(full=True)
 
     # play music
     mixer.init()
@@ -153,17 +180,11 @@ def initialSetup():
 def gameloop():
     brick_sounds = initialSetup()
 
-    createPaddle(game.width, game.height)
-    createBall(paddle)
-    createBlocks(game.width, 1)
-
-    game.printScreen(full=True)
-
     running = True
     ball_launched = False
 
     # to decrease speed of ball movement on screen wrt FPS
-    ball_speed_coefficient = 4
+    ball_speed_coefficient = 3
     move_ball_counter = 0
 
     while running:
@@ -192,6 +213,9 @@ def gameloop():
                 for sp in range(0, abs(ball.x_speed) + (ball.x_speed == 0)):
                     ball.move(game.game_window, move_y=not sp)
                     if ball.isDead(game.game_window.shape[0]):
+                        updateDisplay()
+                        sys.stdout.flush()
+                        ball.clearOldPosition(game.game_window)
                         balls.remove(ball)
                         break
                     elif checkCollision(ball, game.game_window, brick_sounds):
@@ -199,13 +223,28 @@ def gameloop():
                     # time.sleep(0.3)
                     # updateDisplay()
 
+        # no more balls left
+        if not balls:
+            game.decreaseLives()
+            if game.lives == 0:
+                running = False
+            else:
+                respawn(game.game_window)
+                ball_launched = False
+                time.sleep(0.5)
+
+        # check if level is complete
+        elif game.levelComplete(blocks):
+            ball_launched = False
+            game.incrementLevel()
+            if game.level <= game.total_levels:
+                advanceLevel(game.game_window, game.level)  # go to next level
+            else:
+                running = False  # all levels done
+
         # update display based on FPS
         updateDisplay()
         move_ball_counter = (move_ball_counter + 1) % ball_speed_coefficient
-
-        # no more balls left
-        if not balls:
-            running = False
 
 
 gameloop()

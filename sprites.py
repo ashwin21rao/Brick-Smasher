@@ -19,7 +19,7 @@ class Sprite:
         if self.x < game_width:
             game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
         if self.x + self.width < game_width:
-            game_window[self.y: self.y + self.height, self.x + self.width] = Back.__getattribute__("RESET") + " "
+            game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + " "
 
     def clearOldPosition(self, game_window):
         game_width = game_window.shape[1]
@@ -28,6 +28,10 @@ class Sprite:
             game_window[self.y: self.y + self.height, self.x] = " "
         if self.x + self.width < game_width:
             game_window[self.y: self.y + self.height, self.x + self.width] = " "
+
+    def setNewPosition(self, x, y):
+        self.x = x
+        self.y = y
 
 
 # generic sprite movable with arrow keys (left and right)
@@ -189,6 +193,7 @@ class Ball(MovableSprite):
         self.y_speed = y_speed
 
     def isDead(self, game_height):
+        # print("isdead", self.y, bool(self.y + self.height >= game_height))
         return self.y + self.height >= game_height
 
 
@@ -198,6 +203,7 @@ class Block(Sprite):
     def __init__(self, x_coordinate, y_coordinate, width, height, color):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
         self.strength = Block.colors.index(color)
+        self.original_color = color
 
     def getStrength(self):
         return self.strength
