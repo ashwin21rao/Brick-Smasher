@@ -1,4 +1,4 @@
-from blocks import lo
+from blocks import Block
 
 
 class Levels:

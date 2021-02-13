@@ -9,6 +9,15 @@ class Paddle(MovableSprite):
         self.clearOldPosition(game_window)
         self.width = 16
 
+        # game_width = game_window.shape[1]
+        #
+        # self.x -= self.width // 2
+        #
+        # if self.x + self.width > game_width:
+        #     self.x = game_width - self.width
+        # elif self.x < 0:
+        #     self.x = 0
+
     def shrink(self, game_window):
         self.clearOldPosition(game_window)
         self.width = 6

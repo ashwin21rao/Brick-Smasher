@@ -1,5 +1,3 @@
-# print("\x1b[8;40;120t") # columns 120, rows 40
-
 import os
 import sys
 import time
@@ -10,7 +8,7 @@ from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from powerups import PowerUp
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall
 from levels import Levels
 from rawterminal import RawTerminal as rt
 
@@ -28,7 +26,8 @@ power_ups = []
 obstacles = []
 
 # globals
-PowerUpTypes = ["EXPAND PADDLE", "SHRINK PADDLE", "MULTIPLY BALLS", "FAST BALL", "THRU BALL", "PADDLE GRAB"]
+PowerUpTypes = {"EXPAND_PADDLE": ExpandPaddle, "SHRINK_PADDLE": ShrinkPaddle, "THRU_BALL": ThruBall, "FAST_BALL": FastBall}
+# PowerUpTypes = ["EXPAND PADDLE", "SHRINK PADDLE", "MULTIPLY BALLS", "FAST BALL", "THRU BALL", "PADDLE GRAB"]
 
 # -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
@@ -53,10 +52,11 @@ def createBall(paddle):
     balls.append(ball)
 
 
-def createPowerUp(block, type):
+def createPowerUp(block, PowerUpType):
     width = 2
     height = 1
-    power_up = PowerUp(block.x + block.width // 2, block.y + block.height // 2, width, height, type=type)
+
+    power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height)
     power_ups.append(power_up)
 
 
@@ -86,15 +86,12 @@ def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
 
 
 def activatePowerUp(power_up):
-    if power_up.type == "EXPAND PADDLE":
-        paddle.expand(game.game_window)
-    elif power_up.type == "SHRINK PADDLE":
-        paddle.shrink(game.game_window)
-    elif power_up.type == "THRU BALL":
-        for ball in balls:
-            ball.disableCollision()
-        for block in blocks:
-            block.killOnCollision()
+    if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
+        power_up.activate(paddle, game.game_window)
+    elif power_up.type == "THRU_BALL":
+        power_up.activate(balls, blocks)
+    elif power_up.type == "FAST_BALL":
+        power_up.activate(balls)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -114,7 +111,7 @@ def handleBlockCollision(block, game_window, audio_sounds):
         blocks.remove(block)
 
     # create power up on collision
-    createPowerUp(block, random.choice(PowerUpTypes))
+    createPowerUp(block, random.choice(list(PowerUpTypes.values())))
 
 
 def checkBlockCollision(ball, game_window, audio_sounds):
@@ -174,23 +171,23 @@ def renderAndRemove(sprite_list, sprite):
     sprite_list.remove(sprite)
 
 
+def resetPowerUps():
+    for block in blocks:
+        block.kill_on_collision = False
+
+
 def respawn(game_window):
     if paddle is not None:
         paddle.clearOldPosition(game_window)
 
     global power_ups
+    resetPowerUps()
     for power_up in power_ups:
         power_up.clearOldPosition(game_window)
     power_ups = []
 
     createPaddle(game_window.shape[1], game_window.shape[0])
     createBall(paddle)
-    resetPowerUps()
-
-
-def resetPowerUps():
-    for block in blocks:
-        block.kill_on_collision = False
 
 
 def advanceLevel(game_window, level):
@@ -201,6 +198,7 @@ def advanceLevel(game_window, level):
         ball.clearOldPosition(game_window)
     for power_up in power_ups:
         power_up.clearOldPosition(game_window)
+
     blocks = []
     balls = []
     power_ups = []
@@ -262,8 +260,8 @@ def gameloop():
             if not ball_launched:
                 ball_launched = launchBall(char, balls[0], paddle)
 
+        # move power ups
         if move_powerup_counter == 0:
-            # move power ups
             for power_up in power_ups:
                 power_up.move(game.game_window)
                 if power_up.powerUpMissed(game.game_window.shape[0]):
@@ -272,9 +270,10 @@ def gameloop():
                 elif power_up.activated(paddle):
                     activatePowerUp(power_up)
                     renderAndRemove(power_ups, power_up)
+                    break
 
+        # move balls and check collisions
         if move_ball_counter == 0 and ball_launched:
-            # move balls and check collisions
             for ball in balls:
                 for sp in range(0, abs(ball.x_speed) + (ball.x_speed == 0)):
                     ball.move(game.game_window, move_y=not sp)
@@ -286,7 +285,7 @@ def gameloop():
                     # time.sleep(0.3)
                     # updateDisplay()
 
-        # no more balls left
+        # if no more balls left
         if not balls:
             game.decreaseLives()
             if game.lives == 0:

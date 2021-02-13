@@ -3,27 +3,12 @@ from colorama import Back
 
 
 class PowerUp(Sprite, SpriteCollisionMixin):
-    def __init__(self, x_coordinate, y_coordinate, width, height, type, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
-        self.type = type
         self.y_speed = y_speed
 
-    def render(self, game_window):
+    def render(self, game_window, powerup_text=None):
         game_width = game_window.shape[1]
-
-        powerup_text = ""
-        if self.type == "EXPAND PADDLE":
-            powerup_text = "EP"
-        elif self.type == "SHRINK PADDLE":
-            powerup_text = "SP"
-        elif self.type == "MULTIPLY BALLS":
-            powerup_text = "MB"
-        elif self.type == "FAST BALL":
-            powerup_text = "FB"
-        elif self.type == "THRU BALL":
-            powerup_text = "TB"
-        elif self.type == "PADDLE GRAB":
-            powerup_text = "PG"
 
         game_window[self.y, self.x: self.x + self.width] = list(powerup_text)
 
@@ -52,6 +37,64 @@ class PowerUp(Sprite, SpriteCollisionMixin):
         return self.y + self.height >= game_height
 
 
-# class ExpandPaddle(PowerUp):
-#     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
-#         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+class ExpandPaddle(PowerUp):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.type = "EXPAND_PADDLE"
+
+    def render(self, game_window, powerup_text="EP"):
+        super().render(game_window, powerup_text=powerup_text)
+
+    def activate(self, paddle, game_window):
+        paddle.expand(game_window)
+
+    def deactivate(self):
+        pass
+
+
+class ShrinkPaddle(PowerUp):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.type = "SHRINK_PADDLE"
+
+    def render(self, game_window, powerup_text="SP"):
+        super().render(game_window, powerup_text=powerup_text)
+
+    def activate(self, paddle, game_window):
+        paddle.shrink(game_window)
+
+    def deactivate(self):
+        pass
+
+
+class ThruBall(PowerUp):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.type = "THRU_BALL"
+
+    def render(self, game_window, powerup_text="TB"):
+        super().render(game_window, powerup_text=powerup_text)
+
+    def activate(self, balls, blocks):
+        for ball in balls:
+            ball.disableCollision()
+        for block in blocks:
+            block.killOnCollision()
+
+    def deactivate(self, blocks):
+        for block in blocks:
+            block.kill_on_collision = False
+        print("In deactivate", end="")
+
+
+class FastBall(PowerUp):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.type = "FAST_BALL"
+
+    def render(self, game_window, powerup_text="FB"):
+        super().render(game_window, powerup_text=powerup_text)
+
+    def activate(self, balls):
+        for ball in balls:
+            ball.y_speed = 2
