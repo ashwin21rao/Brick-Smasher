@@ -8,7 +8,9 @@ import numpy as np
 from colorama import Fore, Back, Style
 from pygame import mixer
 from game import Game
-from sprites import Paddle, Ball, Block, PowerUp
+from balls import Ball
+from paddle import Paddle
+from powerups import PowerUp
 from levels import Levels
 from rawterminal import RawTerminal as rt
 

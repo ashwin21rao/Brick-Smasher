@@ -1,4 +1,4 @@
-from sprites import Block
+from blocks import lo
 
 
 class Levels:
