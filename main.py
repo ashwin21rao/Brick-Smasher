@@ -3,14 +3,17 @@
 import os
 import sys
 import time
+import random
 import numpy as np
 from colorama import Fore, Back, Style
 from pygame import mixer
 from game import Game
-from sprites import Paddle, Ball, Block
+from sprites import Paddle, Ball, Block, PowerUp
 from levels import Levels
 from rawterminal import RawTerminal as rt
 
+
+# -------------------------------------------------------------------------------------------------------
 # game object
 game = Game()
 game.init()
@@ -19,9 +22,11 @@ game.init()
 paddle = None
 blocks = []
 balls = []
-powerups = []
+power_ups = []
 obstacles = []
 
+# globals
+PowerUpTypes = ["EXPAND PADDLE", "SHRINK PADDLE", "MULTIPLY BALLS", "FAST BALL", "THRU BALL", "PADDLE GRAB"]
 
 # -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
@@ -44,6 +49,13 @@ def createBall(paddle):
 
     ball = Ball(paddle.x + paddle.width // 2 - width // 2, paddle.y - 1, width, height, "cyan")
     balls.append(ball)
+
+
+def createPowerUp(block, type):
+    width = 2
+    height = 1
+    power_up = PowerUp(block.x + block.width // 2, block.y + block.height // 2, width, height, type=type)
+    power_ups.append(power_up)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -71,6 +83,18 @@ def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
     return False
 
 
+def activatePowerUp(power_up):
+    if power_up.type == "EXPAND PADDLE":
+        paddle.expand(game.game_window)
+    elif power_up.type == "SHRINK PADDLE":
+        paddle.shrink(game.game_window)
+    elif power_up.type == "THRU BALL":
+        for ball in balls:
+            ball.disableCollision()
+        for block in blocks:
+            block.killOnCollision()
+
+
 # -------------------------------------------------------------------------------------------------------
 # check collision with block, paddle or wall
 def checkCollision(ball, game_window, audio_sounds):
@@ -87,6 +111,9 @@ def handleBlockCollision(block, game_window, audio_sounds):
         game.incrementScore(block.original_color)
         blocks.remove(block)
 
+    # create power up on collision
+    createPowerUp(block, random.choice(PowerUpTypes))
+
 
 def checkBlockCollision(ball, game_window, audio_sounds):
     global blocks
@@ -98,7 +125,8 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     if len(collided_blocks) == 3:
         for block in collided_blocks:
             handleBlockCollision(block, game_window, audio_sounds)
-        ball.reflectHorizontalAndVertical()
+        if ball.collidable:
+            ball.reflectHorizontalAndVertical()
         return True
 
     # handle collision with sides (not corners)
@@ -112,7 +140,8 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     if len(collided_blocks) == 2:
         for block in collided_blocks:
             handleBlockCollision(block, game_window, audio_sounds)
-        ball.reflectVertical()
+        if ball.collidable:
+            ball.reflectVertical()
         return True
 
     # handle collision with corner of a single block
@@ -128,7 +157,7 @@ def checkBlockCollision(ball, game_window, audio_sounds):
 # -------------------------------------------------------------------------------------------------------
 def updateDisplay():
     # update display
-    sprites = blocks + balls + [paddle] + powerups
+    sprites = blocks + power_ups + [paddle] + balls
     game.updateScreen(sprites)
     game.printScreen()
 
@@ -136,21 +165,43 @@ def updateDisplay():
     time.sleep(1 / game.FPS)
 
 
+def renderAndRemove(sprite_list, sprite):
+    updateDisplay()
+    sys.stdout.flush()
+    sprite.clearOldPosition(game.game_window)
+    sprite_list.remove(sprite)
+
+
 def respawn(game_window):
     if paddle is not None:
         paddle.clearOldPosition(game_window)
+
+    global power_ups
+    for power_up in power_ups:
+        power_up.clearOldPosition(game_window)
+    power_ups = []
+
     createPaddle(game_window.shape[1], game_window.shape[0])
     createBall(paddle)
+    resetPowerUps()
+
+
+def resetPowerUps():
+    for block in blocks:
+        block.kill_on_collision = False
 
 
 def advanceLevel(game_window, level):
-    global balls, blocks
+    global balls, blocks, power_ups
     for block in blocks:
         block.clearOldPosition(game_window)
     for ball in balls:
         ball.clearOldPosition(game_window)
+    for power_up in power_ups:
+        power_up.clearOldPosition(game_window)
     blocks = []
     balls = []
+    power_ups = []
 
     createBlocks(game.width, level)
     respawn(game_window)
@@ -172,20 +223,23 @@ def initialSetup():
     mixer.music.load("extras/background2.wav")
     mixer.music.play(loops=-1)
 
-    brick_sound_1 = mixer.Sound("extras/brick.wav")
-    brick_sound_2 = mixer.Sound("extras/indestructible_brick.wav")
-    return {"regular_brick_sound": brick_sound_1, "indestructible_brick_sound": brick_sound_2}
+    return {"regular_brick_sound": mixer.Sound("extras/brick.wav"),
+            "indestructible_brick_sound": mixer.Sound("extras/indestructible_brick.wav"),
+            "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav")}
 
 
+# -------------------------------------------------------------------------------------------------------
 def gameloop():
     brick_sounds = initialSetup()
 
     running = True
     ball_launched = False
 
-    # to decrease speed of ball movement on screen wrt FPS
+    # to decrease speed of ball and power up movement on screen wrt FPS
     ball_speed_coefficient = 3
     move_ball_counter = 0
+    powerup_speed_coefficient = 5
+    move_powerup_counter = 0
 
     while running:
         # if key has been hit
@@ -206,17 +260,24 @@ def gameloop():
             if not ball_launched:
                 ball_launched = launchBall(char, balls[0], paddle)
 
-        if move_ball_counter == 0 and ball_launched:
+        if move_powerup_counter == 0:
+            # move power ups
+            for power_up in power_ups:
+                power_up.move(game.game_window)
+                if power_up.powerUpMissed(game.game_window.shape[0]):
+                    renderAndRemove(power_ups, power_up)
+                    break
+                elif power_up.activated(paddle):
+                    activatePowerUp(power_up)
+                    renderAndRemove(power_ups, power_up)
 
+        if move_ball_counter == 0 and ball_launched:
             # move balls and check collisions
             for ball in balls:
                 for sp in range(0, abs(ball.x_speed) + (ball.x_speed == 0)):
                     ball.move(game.game_window, move_y=not sp)
                     if ball.isDead(game.game_window.shape[0]):
-                        updateDisplay()
-                        sys.stdout.flush()
-                        ball.clearOldPosition(game.game_window)
-                        balls.remove(ball)
+                        renderAndRemove(balls, ball)
                         break
                     elif checkCollision(ball, game.game_window, brick_sounds):
                         break
@@ -245,6 +306,7 @@ def gameloop():
         # update display based on FPS
         updateDisplay()
         move_ball_counter = (move_ball_counter + 1) % ball_speed_coefficient
+        move_powerup_counter = (move_powerup_counter + 1) % powerup_speed_coefficient
 
 
 gameloop()

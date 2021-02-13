@@ -41,7 +41,7 @@ class RawTerminal:
     @classmethod
     def removeKeyboardDelay(cls):
         atexit.register(cls.resetKeyboardDelay)
-        
+
         # print(os.system("xset q"))
         os.system("xset r rate 50 33")
 
