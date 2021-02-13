@@ -8,7 +8,7 @@ from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife
 from levels import Levels
 from rawterminal import RawTerminal as rt
 
@@ -26,8 +26,19 @@ power_ups = []
 obstacles = []
 
 # globals
-PowerUpTypes = {"EXPAND_PADDLE": ExpandPaddle, "SHRINK_PADDLE": ShrinkPaddle, "THRU_BALL": ThruBall, "FAST_BALL": FastBall}
-# PowerUpTypes = ["EXPAND PADDLE", "SHRINK PADDLE", "MULTIPLY BALLS", "FAST BALL", "THRU BALL", "PADDLE GRAB"]
+PowerUpTypes = {
+                    "EXPAND_PADDLE": ExpandPaddle,
+                    "SHRINK_PADDLE": ShrinkPaddle,
+                    "THRU_BALL": ThruBall,
+                    "FAST_BALL": FastBall,
+                    "SLOW_BALL": SlowBall,
+                    "EXTRA_LIFE": ExtraLife
+                }
+
+# to decrease speed of ball and power up movement on screen wrt FPS
+ball_speed_coefficient = 3
+powerup_speed_coefficient = 5
+
 
 # -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
@@ -90,8 +101,11 @@ def activatePowerUp(power_up):
         power_up.activate(paddle, game.game_window)
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
-    elif power_up.type == "FAST_BALL":
-        power_up.activate(balls)
+    elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
+        global ball_speed_coefficient
+        ball_speed_coefficient = power_up.activate(ball_speed_coefficient)
+    elif power_up.type == "EXTRA_LIFE":
+        game.lives = power_up.activate(game.lives)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -175,6 +189,9 @@ def resetPowerUps():
     for block in blocks:
         block.kill_on_collision = False
 
+    global ball_speed_coefficient
+    ball_speed_coefficient = 3
+
 
 def respawn(game_window):
     if paddle is not None:
@@ -236,9 +253,7 @@ def gameloop():
     ball_launched = False
 
     # to decrease speed of ball and power up movement on screen wrt FPS
-    ball_speed_coefficient = 3
     move_ball_counter = 0
-    powerup_speed_coefficient = 5
     move_powerup_counter = 0
 
     while running:
