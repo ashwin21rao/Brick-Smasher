@@ -32,7 +32,7 @@ class PowerUp(Sprite, SpriteCollisionMixin):
         # move power up
         self.y += self.y_speed
 
-    def activated(self, paddle):
+    def ready(self, paddle):
         return self.checkHorizontalCollision(paddle)
 
     def powerUpMissed(self, game_height):
@@ -40,6 +40,8 @@ class PowerUp(Sprite, SpriteCollisionMixin):
 
 
 class ExpandPaddle(PowerUp):
+    type = "EXPAND_PADDLE"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.type = "EXPAND_PADDLE"
@@ -53,9 +55,10 @@ class ExpandPaddle(PowerUp):
 
 
 class ShrinkPaddle(PowerUp):
+    type = "SHRINK_PADDLE"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "SHRINK_PADDLE"
         self.render = partial(super().render, powerup_text="SP")
 
     def activate(self, paddle, game_window):
@@ -66,9 +69,10 @@ class ShrinkPaddle(PowerUp):
 
 
 class ThruBall(PowerUp):
+    type = "THRU_BALL"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "THRU_BALL"
         self.render = partial(super().render, powerup_text="TB")
 
     def activate(self, balls, blocks):
@@ -84,9 +88,10 @@ class ThruBall(PowerUp):
 
 
 class FastBall(PowerUp):
+    type = "FAST_BALL"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "FAST_BALL"
         self.speed_multiplier = 1
         self.render = partial(super().render, powerup_text="FB")
 
@@ -98,9 +103,10 @@ class FastBall(PowerUp):
 
 
 class SlowBall(PowerUp):
+    type = "SLOW_BALL"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "SLOW_BALL"
         self.speed_multiplier = 1
         self.render = partial(super().render, powerup_text="SB")
 
@@ -115,9 +121,10 @@ class SlowBall(PowerUp):
 
 
 class ExtraLife(PowerUp):
+    type = "EXTRA_LIFE"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "EXTRA_LIFE"
         self.life_multiplier = 1
         self.render = partial(super().render, powerup_text="XL")
 
@@ -126,16 +133,31 @@ class ExtraLife(PowerUp):
 
 
 class MultiplyBalls(PowerUp):
+    type = "MULTIPLY_BALLS"
+
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.type = "MULTIPLY_BALLS"
         self.life_multiplier = 1
         self.render = partial(super().render, powerup_text="MB")
 
     def activate(self, balls):
         new_balls = []
         for ball in balls:
-            new_ball = Ball(ball.x, ball.y, ball.width, ball.height, ball.color, x_speed=-ball.x_speed, y_speed=ball.y_speed)
+            new_ball = Ball(ball.x, ball.y, ball.width, ball.height, ball.color, x_speed=-ball.x_speed, y_speed=ball.y_speed,
+                            launched=ball.launched, enable_paddle_grab=ball.enable_paddle_grab)
             new_balls.append(new_ball)
 
         balls.extend(new_balls)
+
+
+class PaddleGrab(PowerUp):
+    type = "PADDLE_GRAB"
+
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.life_multiplier = 1
+        self.render = partial(super().render, powerup_text="PG")
+
+    def activate(self, balls):
+        for ball in balls:
+            ball.enable_paddle_grab = True

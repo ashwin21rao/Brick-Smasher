@@ -8,9 +8,10 @@ from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife, MultiplyBalls
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, PaddleGrab
 from levels import Levels
 from rawterminal import RawTerminal as rt
+import config
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -26,20 +27,17 @@ power_ups = []
 obstacles = []
 
 # globals
-PowerUpTypes = {
-                    # "EXPAND_PADDLE": ExpandPaddle,
-                    # "SHRINK_PADDLE": ShrinkPaddle,
-                    # "THRU_BALL": ThruBall,
-                    # "FAST_BALL": FastBall,
-                    # "SLOW_BALL": SlowBall,
-                    # "EXTRA_LIFE": ExtraLife,
-                    "MULTIPLY_BALLS": MultiplyBalls
-                }
+PowerUpTypes = config.POWER_UP_TYPES.copy()
 
 # to decrease speed of ball and power up movement on screen wrt FPS
 ball_speed_coefficient = 3
 powerup_speed_coefficient = 5
 
+
+def log(str):
+    f = open("output.txt", "a")
+    f.write(str)
+    f.close()
 
 # -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
@@ -73,24 +71,25 @@ def createPowerUp(block, PowerUpType):
 
 
 # -------------------------------------------------------------------------------------------------------
-def movePaddle(char, game_window, ball, paddle, ball_launched=True):
+def movePaddle(char, game_window, balls, paddle):
     movable_sprites = [paddle]
-    if not ball_launched:
-        movable_sprites.append(ball)
+    for ball in balls:
+        if not ball.launched:
+            movable_sprites.append(ball)
 
     # check for 'a'/'j' and 'd'/'l' keys
     if char == 97 or char == 106:
         for sprite in movable_sprites:
-            sprite.moveLeft(game_window)
+            sprite.moveLeft(game_window, speed=paddle.x_speed)
     elif char == 100 or char == 108:
         for sprite in movable_sprites:
-            sprite.moveRight(game_window)
+            sprite.moveRight(game_window, speed=paddle.x_speed)
 
 
-def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
+def launchBall(char, ball, paddle):
     # check for 'w'/'i' key
     if char == 119 or char == 105:
-        ball.launch(x_speed, y_speed)
+        ball.launch()
         paddle.setSpeed(2)
         return True
 
@@ -100,8 +99,10 @@ def launchBall(char, ball, paddle, x_speed=1, y_speed=-1):
 def activatePowerUp(power_up):
     if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
+        PowerUpTypes.pop(power_up.type, None)
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
+        PowerUpTypes.pop(power_up.type, None)
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
         global ball_speed_coefficient
         ball_speed_coefficient = power_up.activate(ball_speed_coefficient)
@@ -109,6 +110,9 @@ def activatePowerUp(power_up):
         game.lives = power_up.activate(game.lives)
     elif power_up.type == "MULTIPLY_BALLS":
         power_up.activate(balls)
+    elif power_up.type == "PADDLE_GRAB":
+        power_up.activate(balls)
+        PowerUpTypes.pop(power_up.type, None)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -195,6 +199,9 @@ def resetPowerUps():
     global ball_speed_coefficient
     ball_speed_coefficient = 3
 
+    global PowerUpTypes
+    PowerUpTypes = config.POWER_UP_TYPES.copy()
+
 
 def respawn(game_window):
     if paddle is not None:
@@ -272,11 +279,12 @@ def gameloop():
                 running = False
 
             # move paddle based on keypress
-            movePaddle(char, game.game_window, balls[0], paddle, ball_launched)
+            movePaddle(char, game.game_window, balls, paddle)
 
             # launch ball based on keypress
-            if not ball_launched:
-                ball_launched = launchBall(char, balls[0], paddle)
+            for ball in balls:
+                if not ball.launched:
+                    launchBall(char, ball, paddle)
 
         # move power ups
         if move_powerup_counter == 0:
@@ -285,14 +293,16 @@ def gameloop():
                 if power_up.powerUpMissed(game.game_window.shape[0]):
                     renderAndRemove(power_ups, power_up)
                     break
-                elif power_up.activated(paddle):
+                elif power_up.ready(paddle):
                     activatePowerUp(power_up)
                     renderAndRemove(power_ups, power_up)
                     break
 
         # move balls and check collisions
-        if move_ball_counter == 0 and ball_launched:
+        if move_ball_counter == 0:
             for ball in balls:
+                if not ball.launched:
+                    continue
                 for sp in range(0, abs(ball.x_speed) + (ball.x_speed == 0)):
                     ball.move(game.game_window, move_y=not sp)
                     if ball.isDead(game.game_window.shape[0]):
@@ -310,12 +320,10 @@ def gameloop():
                 running = False
             else:
                 respawn(game.game_window)
-                ball_launched = False
                 time.sleep(0.5)
 
         # check if level is complete
         elif game.levelComplete(blocks):
-            ball_launched = False
             game.incrementLevel()
             if game.level <= game.total_levels:
                 advanceLevel(game.game_window, game.level)  # go to next level

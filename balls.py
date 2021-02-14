@@ -2,10 +2,12 @@ from sprites import MovableSprite, SpriteCollisionMixin
 
 
 class Ball(MovableSprite, SpriteCollisionMixin):
-    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=-1, launched=False, enable_paddle_grab=False):
         super().__init__(x_coordinate, y_coordinate, width, height, color, x_speed)
         self.y_speed = y_speed
         self.collidable = True
+        self.launched = launched
+        self.enable_paddle_grab = enable_paddle_grab
 
     def reflectHorizontal(self):
         self.y_speed *= -1
@@ -96,6 +98,9 @@ class Ball(MovableSprite, SpriteCollisionMixin):
                 # else:
                 #     self.x_speed = -2
 
+                if self.enable_paddle_grab:
+                    self.launched = False
+
     def handleWallCollision(self, game_window):
         game_height, game_width = game_window.shape
         collided = False
@@ -122,9 +127,8 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         if move_y:
             self.y += self.y_speed
 
-    def launch(self, x_speed=1, y_speed=-1):
-        self.x_speed = x_speed
-        self.y_speed = y_speed
+    def launch(self):
+        self.launched = True
 
     def isDead(self, game_height):
         return self.y + self.height >= game_height

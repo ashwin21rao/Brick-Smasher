@@ -40,15 +40,21 @@ class MovableSprite(Sprite):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
         self.x_speed = x_speed
 
-    def moveLeft(self, game_window):
+    def moveLeft(self, game_window, speed=None):
         self.clearOldPosition(game_window)
-        self.x = self.x - self.x_speed if self.x - self.x_speed > -1 else 0  # move left
 
-    def moveRight(self, game_window):
+        if speed is None:
+            speed = abs(self.x_speed)
+        self.x = self.x - speed if self.x - speed > -1 else 0  # move left
+
+    def moveRight(self, game_window, speed=None):
         self.clearOldPosition(game_window)
 
         game_width = game_window.shape[1]
-        self.x = self.x + self.x_speed if self.x + self.width + self.x_speed <= game_width \
+        if speed is None:
+            speed = abs(self.x_speed)
+
+        self.x = self.x + speed if self.x + self.width + speed <= game_width \
             else game_width - self.width  # move right
 
     def setSpeed(self, x_speed):
