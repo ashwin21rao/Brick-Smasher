@@ -1,6 +1,7 @@
 from sprites import Sprite, SpriteCollisionMixin
 from colorama import Back
 from functools import partial
+from balls import Ball
 
 
 class PowerUp(Sprite, SpriteCollisionMixin):
@@ -122,3 +123,19 @@ class ExtraLife(PowerUp):
 
     def activate(self, lives):
         return lives + self.life_multiplier
+
+
+class MultiplyBalls(PowerUp):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.type = "MULTIPLY_BALLS"
+        self.life_multiplier = 1
+        self.render = partial(super().render, powerup_text="MB")
+
+    def activate(self, balls):
+        new_balls = []
+        for ball in balls:
+            new_ball = Ball(ball.x, ball.y, ball.width, ball.height, ball.color, x_speed=-ball.x_speed, y_speed=ball.y_speed)
+            new_balls.append(new_ball)
+
+        balls.extend(new_balls)

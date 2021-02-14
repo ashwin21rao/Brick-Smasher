@@ -8,7 +8,7 @@ from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife, MultiplyBalls
 from levels import Levels
 from rawterminal import RawTerminal as rt
 
@@ -27,12 +27,13 @@ obstacles = []
 
 # globals
 PowerUpTypes = {
-                    "EXPAND_PADDLE": ExpandPaddle,
-                    "SHRINK_PADDLE": ShrinkPaddle,
-                    "THRU_BALL": ThruBall,
-                    "FAST_BALL": FastBall,
-                    "SLOW_BALL": SlowBall,
-                    "EXTRA_LIFE": ExtraLife
+                    # "EXPAND_PADDLE": ExpandPaddle,
+                    # "SHRINK_PADDLE": ShrinkPaddle,
+                    # "THRU_BALL": ThruBall,
+                    # "FAST_BALL": FastBall,
+                    # "SLOW_BALL": SlowBall,
+                    # "EXTRA_LIFE": ExtraLife,
+                    "MULTIPLY_BALLS": MultiplyBalls
                 }
 
 # to decrease speed of ball and power up movement on screen wrt FPS
@@ -106,6 +107,8 @@ def activatePowerUp(power_up):
         ball_speed_coefficient = power_up.activate(ball_speed_coefficient)
     elif power_up.type == "EXTRA_LIFE":
         game.lives = power_up.activate(game.lives)
+    elif power_up.type == "MULTIPLY_BALLS":
+        power_up.activate(balls)
 
 
 # -------------------------------------------------------------------------------------------------------

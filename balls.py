@@ -113,8 +113,6 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         return collided
 
     def move(self, game_window, move_y=True):
-        # print(f"{self.x}  {self.y}  ", end="")
-
         # clear old position
         self.clearOldPosition(game_window)
 
@@ -129,7 +127,6 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         self.y_speed = y_speed
 
     def isDead(self, game_height):
-        # print("isdead", self.y, bool(self.y + self.height >= game_height))
         return self.y + self.height >= game_height
 
     def disableCollision(self):
