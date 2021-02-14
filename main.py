@@ -106,21 +106,21 @@ def activatePowerUp(power_up):
         if ShrinkPaddle.type not in PowerUpTypes:
             PowerUpTypes[ShrinkPaddle.type] = ShrinkPaddle
 
+        # release grabbed balls if any
+        for ball in balls:
+            if not ball.launched:
+                ball.launch()
+
     elif power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
         PowerUpTypes.pop(power_up.type, None)
         if ExpandPaddle.type not in PowerUpTypes:
             PowerUpTypes[ExpandPaddle.type] = ExpandPaddle
 
-        # if grabbed balls are outside shrunken paddle, move them
+        # release grabbed balls if any
         for ball in balls:
             if not ball.launched:
-                if ball.x + ball.width < paddle.x:
-                    ball.clearOldPosition(game.game_window)
-                    ball.x = paddle.x - ball.width
-                elif ball.x > paddle.x + paddle.width:
-                    ball.clearOldPosition(game.game_window)
-                    ball.x = paddle.x + paddle.width
+                ball.launch()
 
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
@@ -135,6 +135,11 @@ def activatePowerUp(power_up):
 
     elif power_up.type == "MULTIPLY_BALLS":
         power_up.activate(balls, game.game_window)
+
+        # release grabbed balls if any
+        for ball in balls:
+            if not ball.launched:
+                ball.launch()
 
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
