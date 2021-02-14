@@ -66,23 +66,15 @@ class Ball(MovableSprite, SpriteCollisionMixin):
             if self.checkHorizontalCollision(sprite) or \
                     (self.checkCornerCollision(sprite) and self.handleCornerCollision(sprite)):
                 self.reflectHorizontal()
-                # print("hereeeeee", end="")
 
                 mid = sprite.x + sprite.width // 2 - self.width // 2
-                # if self.x == mid:
-                #     self.x_speed = 0
-                # elif self.x > mid + 3:
-                #     self.x_speed = 2
-                # elif self.x > mid:
-                #     self.x_speed = 2
-                # elif self.x + self.width - 1 < mid - 2:
-                #     self.x_speed = -2
-                # elif self.x + self.width - 1 < mid + 1:
-                #     self.x_speed = -2
 
-                for x in range(self.x - 2, self.x + self.width + 1):
+                for x in range(sprite.x - 2, sprite.x + sprite.width + 1):
                     if self.x == x:
-                        self.x_speed = (x - mid + (1 if x > mid else -1)) // 2
+                        self.x_speed = (abs(x - mid + (1 if x > mid else -1 if x < mid else 0)) // 2) * \
+                                       (-1 if x < mid else 1)
+
+                # print(f"hereeeeee {abs(self.x_speed)} {self.x + self.width} {sprite.x}", end="")
 
                 # for x in range(mid+1, self.x + self.width + 1):
                 #     if self.x == x:
@@ -100,6 +92,10 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
                 if self.enable_paddle_grab:
                     self.launched = False
+
+                return True
+
+            return False
 
     def handleWallCollision(self, game_window):
         game_height, game_width = game_window.shape

@@ -30,8 +30,8 @@ obstacles = []
 PowerUpTypes = config.POWER_UP_TYPES.copy()
 
 # to decrease speed of ball and power up movement on screen wrt FPS
-ball_speed_coefficient = 3
-powerup_speed_coefficient = 5
+ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
+powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
 
 
 def log(str):
@@ -109,7 +109,7 @@ def activatePowerUp(power_up):
     elif power_up.type == "EXTRA_LIFE":
         game.lives = power_up.activate(game.lives)
     elif power_up.type == "MULTIPLY_BALLS":
-        power_up.activate(balls)
+        power_up.activate(balls, game.game_window)
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
         PowerUpTypes.pop(power_up.type, None)
@@ -180,6 +180,7 @@ def updateDisplay():
     sprites = blocks + power_ups + [paddle] + balls
     game.updateScreen(sprites)
     game.printScreen()
+    sys.stdout.flush()
 
     # gameloop runs based on FPS
     time.sleep(1 / game.FPS)
@@ -197,7 +198,7 @@ def resetPowerUps():
         block.kill_on_collision = False
 
     global ball_speed_coefficient
-    ball_speed_coefficient = 3
+    ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
 
     global PowerUpTypes
     PowerUpTypes = config.POWER_UP_TYPES.copy()
@@ -310,8 +311,9 @@ def gameloop():
                         break
                     elif checkCollision(ball, game.game_window, brick_sounds):
                         break
-                    # time.sleep(0.3)
+                    # time.sleep(0.1)
                     # updateDisplay()
+                    # sys.stdout.flush()
 
         # if no more balls left
         if not balls:
