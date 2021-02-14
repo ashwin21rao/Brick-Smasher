@@ -157,8 +157,9 @@ def handleBlockCollision(block, game_window, audio_sounds):
         game.incrementScore(block.original_color)
         blocks.remove(block)
 
-    # create power up on collision
-    createPowerUp(block, random.choice(list(PowerUpTypes.values())))
+    # create power up on collision every 8 collisions on average and if score is above threshold
+    if game.score > config.POWERUP_SCORE_THRESHOLD and not random.randint(0, config.POWERUP_FREQUENCY):
+        createPowerUp(block, random.choice(list(PowerUpTypes.values())))
 
 
 def checkBlockCollision(ball, game_window, audio_sounds):
