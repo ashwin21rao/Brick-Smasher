@@ -103,11 +103,13 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
         # bounce off side walls
         if self.x + self.width >= game_width or self.x <= 0:
+            self.x = 0 if self.x <= 0 else game_width - self.width
             self.reflectVertical()
             collided = True
 
         # bounce off top wall
         if self.y <= 0 or self.y + self.height >= game_height:
+            self.y = 0 if self.y <= 0 else game_height - self.height
             self.reflectHorizontal()
             collided = True
 

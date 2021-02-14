@@ -3,11 +3,11 @@ from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, E
 POWER_UP_TYPES = {
     ExpandPaddle.type: ExpandPaddle,
     ShrinkPaddle.type: ShrinkPaddle,
-    ThruBall.type: ThruBall,
-    FastBall.type: FastBall,
-    SlowBall.type: SlowBall,
-    ExtraLife.type: ExtraLife,
-    MultiplyBalls.type: MultiplyBalls,
+    # ThruBall.type: ThruBall,
+    # FastBall.type: FastBall,
+    # SlowBall.type: SlowBall,
+    # ExtraLife.type: ExtraLife,
+    # MultiplyBalls.type: MultiplyBalls,
     PaddleGrab.type: PaddleGrab
 }
 

@@ -112,6 +112,16 @@ def activatePowerUp(power_up):
         if ExpandPaddle.type not in PowerUpTypes:
             PowerUpTypes[ExpandPaddle.type] = ExpandPaddle
 
+        # if grabbed balls are outside shrunken paddle, move them
+        for ball in balls:
+            if not ball.launched:
+                if ball.x + ball.width < paddle.x:
+                    ball.clearOldPosition(game.game_window)
+                    ball.x = paddle.x - ball.width
+                elif ball.x > paddle.x + paddle.width:
+                    ball.clearOldPosition(game.game_window)
+                    ball.x = paddle.x + paddle.width
+
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
         PowerUpTypes.pop(power_up.type, None)
