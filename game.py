@@ -3,6 +3,7 @@ import numpy as np
 import time
 from datetime import datetime, timedelta
 from colorama import Fore, Back, Style
+import config
 
 
 class Game:
@@ -24,7 +25,7 @@ class Game:
         self.game_window = self.screen[self.top_margin: self.top_margin + self.height,
                                        self.left_margin: self.left_margin + self.width]
 
-        self.FPS = 60
+        self.FPS = config.FPS
         self.total_levels = 3
         self.level = 1
         self.lives = 3
@@ -78,7 +79,7 @@ class Game:
 
         # lives
         lives_text = f"Lives: {self.lives}"
-        self.screen[self.rows - self.top_margin + 1, self.columns - self.left_margin - len(lives_text) + 2: self.columns - self.left_margin + 2] = list(lives_text)
+        self.screen[self.rows - self.top_margin + 1, self.columns - self.left_margin - len(lives_text) + 1: self.columns - self.left_margin + 2] = list(" " + lives_text)
 
         # print top info bar
         print(f"\033[{self.top_margin - 2};{self.left_margin}H", end="")

@@ -72,18 +72,21 @@ def createPowerUp(block, PowerUpType):
 
 # -------------------------------------------------------------------------------------------------------
 def movePaddle(char, game_window, balls, paddle):
-    movable_sprites = [paddle]
+    movable_sprites = []
     for ball in balls:
         if not ball.launched:
             movable_sprites.append(ball)
+    movable_sprites.append(paddle)
 
     # check for 'a'/'j' and 'd'/'l' keys
     if char == 97 or char == 106:
-        for sprite in movable_sprites:
-            sprite.moveLeft(game_window, speed=paddle.x_speed)
+        if paddle.x > 0:
+            for sprite in movable_sprites:
+                sprite.moveLeft(game_window, speed=min(paddle.x_speed, paddle.x))
     elif char == 100 or char == 108:
-        for sprite in movable_sprites:
-            sprite.moveRight(game_window, speed=paddle.x_speed)
+        if paddle.x + paddle.width < game.width:
+            for sprite in movable_sprites:
+                sprite.moveRight(game_window, speed=min(paddle.x_speed, game.width - (paddle.x + paddle.width)))
 
 
 def launchBall(char, ball, paddle):
@@ -97,19 +100,32 @@ def launchBall(char, ball, paddle):
 
 
 def activatePowerUp(power_up):
-    if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
+    if power_up.type == "EXPAND_PADDLE":
         power_up.activate(paddle, game.game_window)
         PowerUpTypes.pop(power_up.type, None)
+        if ShrinkPaddle.type not in PowerUpTypes:
+            PowerUpTypes[ShrinkPaddle.type] = ShrinkPaddle
+
+    elif power_up.type == "SHRINK_PADDLE":
+        power_up.activate(paddle, game.game_window)
+        PowerUpTypes.pop(power_up.type, None)
+        if ExpandPaddle.type not in PowerUpTypes:
+            PowerUpTypes[ExpandPaddle.type] = ExpandPaddle
+
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
         PowerUpTypes.pop(power_up.type, None)
+
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
         global ball_speed_coefficient
         ball_speed_coefficient = power_up.activate(ball_speed_coefficient)
+
     elif power_up.type == "EXTRA_LIFE":
         game.lives = power_up.activate(game.lives)
+
     elif power_up.type == "MULTIPLY_BALLS":
         power_up.activate(balls, game.game_window)
+
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
         PowerUpTypes.pop(power_up.type, None)
