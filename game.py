@@ -33,6 +33,7 @@ class Game:
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
+        self.ticks = None
 
         self.createGameBox()
 
@@ -65,6 +66,19 @@ class Game:
         self.screen[self.rows - self.bottom_margin, self.columns - self.right_margin] = \
             Back.RESET + "\u251B"
 
+    def renderCenterText(self, text, y, back=None, fore=None):
+        margin = self.left_margin + (self.width - len(text)) // 2
+        self.screen[y, margin: margin + len(text)] = list(bytes(text, "utf-8").decode("unicode_escape"))
+        if fore is not None:
+            self.screen[y, margin - 1] = Fore.__getattribute__(fore.upper()) + " "
+            self.screen[y, margin + len(text)] = Fore.RESET + " "
+
+        if back is not None:
+            self.screen[y, margin - 1] = Back.__getattribute__(back.upper()) + " "
+            self.screen[y, margin + len(text)] = Back.RESET + " "
+
+        return margin
+
     def printInfoBar(self):
         # title
         title = "BRICK SMASH"
@@ -74,8 +88,8 @@ class Game:
         self.screen[self.top_margin - 2, title_margin + len(title)] = Style.RESET_ALL + " "
 
         # time
-        seconds = int((datetime.now() - (self.start_time if self.start_time is not None else datetime.now())).total_seconds())
-        time_text = "{:0>8}".format(str(timedelta(seconds=seconds)))
+        self.ticks = int((datetime.now() - (self.start_time if self.start_time is not None else datetime.now())).total_seconds())
+        time_text = "{:0>8}".format(str(timedelta(seconds=self.ticks)))
         self.screen[self.top_margin - 2, self.left_margin - 1: self.left_margin - 1 + len(time_text)] = list(time_text)
 
         # score
@@ -102,7 +116,7 @@ class Game:
 
     def printScreen(self, full=False):
         # if terminal too small for game, resize it
-        print(f"\33[8;{self.rows};{self.columns}t", end="")
+        print(f"\033[8;{self.rows};{self.columns}t", end="")
 
         # print screen
         if full:
@@ -138,11 +152,44 @@ class Game:
 
     def renderStartScreen(self):
         self.clearScreen()
-        self.game_window[self.height // 2, self.width // 2] = "S"
+
+        y = self.top_margin + 5
+        self.renderCenterText("Press enter to start, q to quit", y)
+
+        self.renderCenterText("POWERUPS:", y + 3)
+
+        self.renderCenterText("EP: Expand Paddle        SP: Shrink Paddle", y + 5)
+        self.renderCenterText("TB: Thru Ball            MB: Multiply Balls", y + 6)
+        self.renderCenterText("FB: Fast Ball            SB: Slow Ball    ", y + 7)
+        self.renderCenterText("PG: Paddle Grab          XL: Extra Life    ", y + 8)
+
+        self.renderCenterText("BLOCKS:", y + 11)
+
+        m = self.renderCenterText(f"        : 1 hit to break ", y + 13)
+        self.screen[y + 13, m - 1] = Back.GREEN + " "
+        self.screen[y + 13, m + 7] = Back.RESET + " "
+
+        m = self.renderCenterText(f"        : 2 hits to break", y + 15)
+        self.screen[y + 15, m - 1] = Back.YELLOW + " "
+        self.screen[y + 15, m + 7] = Back.RESET + " "
+
+        m = self.renderCenterText(f"        : 3 hits to break", y + 17)
+        self.screen[y + 17, m - 1] = Back.RED + " "
+        self.screen[y + 17, m + 7] = Back.RESET + " "
+
+        m = self.renderCenterText(f"        : Unbreakable    ", y + 19)
+        self.screen[y + 19, m - 1] = Back.BLUE + " "
+        self.screen[y + 19, m + 7] = Back.RESET + " "
 
     def renderEndScreen(self):
         self.clearScreen()
-        self.game_window[self.height // 2, self.width // 2] = "E"
+
+        y = self.top_margin + 12
+        self.renderCenterText("Game Over!", y)
+        self.renderCenterText("Press enter to play again, q to quit", y + 2)
+
+        self.renderCenterText(f"Score: {self.score}", y + 4)
+        self.renderCenterText("Time: {:0>8}".format(str(timedelta(seconds=self.ticks))), y + 5)
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
