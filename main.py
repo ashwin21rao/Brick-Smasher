@@ -103,7 +103,6 @@ def activatePowerUp(power_up):
 
     if power_up.type == "EXPAND_PADDLE":
         power_up.activate(paddle, game.game_window)
-        PowerUpTypes.pop(power_up.type, None)
         if ShrinkPaddle.type not in PowerUpTypes:
             PowerUpTypes[ShrinkPaddle.type] = ShrinkPaddle
 
@@ -114,7 +113,6 @@ def activatePowerUp(power_up):
 
     elif power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
-        PowerUpTypes.pop(power_up.type, None)
         if ExpandPaddle.type not in PowerUpTypes:
             PowerUpTypes[ExpandPaddle.type] = ExpandPaddle
 
@@ -125,7 +123,6 @@ def activatePowerUp(power_up):
 
     elif power_up.type == "THRU_BALL":
         power_up.activate(balls, blocks)
-        PowerUpTypes.pop(power_up.type, None)
 
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
         global ball_speed_coefficient
@@ -144,7 +141,6 @@ def activatePowerUp(power_up):
 
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
-        PowerUpTypes.pop(power_up.type, None)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -165,8 +161,8 @@ def handleBlockCollision(block, game_window, audio_sounds):
 
     # create power up probabilistically on collision and if score is above threshold
     if game.score > config.POWERUP_SCORE_THRESHOLD:
-        if np.random.choice([0, 1], 1, [1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY])[0]:
-            createPowerUp(block, np.random.choice(list(PowerUpTypes.values()), 1, config.POWERUP_PROBABILITIES)[0])
+        if np.random.choice([0, 1], p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
+            createPowerUp(block, np.random.choice(list(PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
 
 
 def checkBlockCollision(ball, game_window, audio_sounds):
