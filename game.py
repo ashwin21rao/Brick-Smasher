@@ -11,15 +11,17 @@ class Game:
         self.width = width  # width of game screen
         self.height = height  # height of game screen
 
-        # columns, rows = os.get_terminal_size()
-        # self.rows = height + 10 if rows < height else rows          # rows in terminal
-        # self.columns = width + 20 if columns < width else columns   # columns in terminal
+        columns, rows = os.get_terminal_size()
+        self.rows = height + 10 if rows < height + 6 else rows          # rows in terminal
+        self.columns = width + 20 if columns < width + 6 else columns   # columns in terminal
 
-        self.rows = height + 10
-        self.columns = width + 20
+        # self.rows = height + 10
+        # self.columns = width + 20
 
         self.left_margin = (self.columns - self.width) // 2
+        self.right_margin = self.left_margin + ((self.columns - self.width) % 2)
         self.top_margin = (self.rows - self.height) // 2
+        self.bottom_margin = self.top_margin + ((self.rows - self.height) % 2)
 
         self.screen = np.array([[" " for _ in range(self.columns)] for _ in range(self.rows)], dtype=object)
         self.game_window = self.screen[self.top_margin: self.top_margin + self.height,
@@ -38,27 +40,27 @@ class Game:
 
     def createGameBox(self):
         # vertical lines
-        self.screen[self.top_margin - 1: self.rows - self.top_margin + 1, self.left_margin - 1] = \
+        self.screen[self.top_margin - 1: self.rows - self.bottom_margin + 1, self.left_margin - 1] = \
             Back.RESET + "\u2503"
-        self.screen[self.top_margin - 1: self.rows - self.top_margin + 1, self.columns - self.left_margin] = \
+        self.screen[self.top_margin - 1: self.rows - self.bottom_margin + 1, self.columns - self.right_margin] = \
             Back.RESET + "\u2503"
 
         # horizontal lines
-        self.screen[self.top_margin - 1, self.left_margin - 1: self.columns - self.left_margin + 1] = \
+        self.screen[self.top_margin - 1, self.left_margin - 1: self.columns - self.right_margin + 1] = \
             Back.RESET + "\u2501"
-        self.screen[self.rows - self.top_margin, self.left_margin - 1: self.columns - self.left_margin + 1] = \
+        self.screen[self.rows - self.bottom_margin, self.left_margin - 1: self.columns - self.right_margin + 1] = \
             Back.RESET + "\u2501"
 
         # corners
         self.screen[self.top_margin - 1, self.left_margin - 1] = Back.RESET + "\u250F"
-        self.screen[self.top_margin - 1, self.columns - self.left_margin] = Back.RESET + "\u2513"
-        self.screen[self.rows - self.top_margin, self.left_margin - 1] = Back.RESET + "\u2517"
-        self.screen[self.rows - self.top_margin, self.columns - self.left_margin] = \
+        self.screen[self.top_margin - 1, self.columns - self.right_margin] = Back.RESET + "\u2513"
+        self.screen[self.rows - self.bottom_margin, self.left_margin - 1] = Back.RESET + "\u2517"
+        self.screen[self.rows - self.bottom_margin, self.columns - self.right_margin] = \
             Back.RESET + "\u251B"
 
     def printInfoBar(self):
         # title
-        title = "BRICK SMASH"
+        title = f"BRICK SMASH r:{self.rows} c:{self.columns} h:{self.height} w:{self.width}"
         title_margin = self.left_margin + (self.width - len(title)) // 2
         self.screen[self.top_margin - 2, title_margin: title_margin + len(title)] = list(title)
         self.screen[self.top_margin - 2, title_margin - 1] = Style.BRIGHT + " "
@@ -71,15 +73,15 @@ class Game:
 
         # score
         score_text = f"Score: {self.score}"
-        self.screen[self.top_margin - 2, self.columns - self.left_margin - len(score_text) + 2: self.columns - self.left_margin + 2] = list(score_text)
+        self.screen[self.top_margin - 2, self.columns - self.right_margin - len(score_text) + 2: self.columns - self.right_margin + 2] = list(score_text)
 
         # level
         level_text = f"Level: {self.level}"
-        self.screen[self.rows - self.top_margin + 1, self.left_margin: self.left_margin + len(level_text)] = list(level_text)
+        self.screen[self.rows - self.bottom_margin + 1, self.left_margin: self.left_margin + len(level_text)] = list(level_text)
 
         # lives
         lives_text = f"Lives: {self.lives}"
-        self.screen[self.rows - self.top_margin + 1, self.columns - self.left_margin - len(lives_text) + 1: self.columns - self.left_margin + 2] = list(" " + lives_text)
+        self.screen[self.rows - self.bottom_margin + 1, self.columns - self.right_margin - len(lives_text) + 1: self.columns - self.right_margin + 2] = list(" " + lives_text)
 
         # print top info bar
         print(f"\033[{self.top_margin - 1};{self.left_margin}H", end="")
