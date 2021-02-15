@@ -158,7 +158,7 @@ def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
     block.handleCollision(game_window, audio_sounds)
     if block.getStrength() < 0:
-        game.incrementScore(block.original_color)
+        game.incrementScore(block.original_color, block.invisible_new_color)
         blocks.remove(block)
 
     # create power up on collision every 8 collisions on average and if score is above threshold

@@ -16,10 +16,11 @@ class Sprite:
         # print("HERE (sprite render)", self, self.x, self.width, "\r")
         game_width = game_window.shape[1]
 
-        if self.x < game_width:
-            game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
-        if self.x + self.width < game_width:
-            game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + " "
+        if self.color is not None:
+            if self.x < game_width:
+                game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
+            if self.x + self.width < game_width:
+                game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + " "
 
     def clearOldPosition(self, game_window):
         game_width = game_window.shape[1]

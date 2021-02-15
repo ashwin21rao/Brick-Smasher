@@ -213,13 +213,16 @@ class Game:
 
         return None
 
-    def incrementScore(self, block_color):
+    def incrementScore(self, block_color, invisible_new_color):
         if block_color == "green":
             self.score += 10
         elif block_color == "yellow":
             self.score += 20
         elif block_color == "red":
             self.score += 30
+        elif block_color is None:
+            self.incrementScore(invisible_new_color, None)
+            self.score += 10
 
     def decreaseLives(self):
         self.lives -= 1
