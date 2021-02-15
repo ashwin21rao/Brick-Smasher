@@ -17,7 +17,6 @@ import config
 # -------------------------------------------------------------------------------------------------------
 # game object
 game = Game()
-game.init()
 
 # lists of obstacles
 paddle = None
@@ -211,6 +210,8 @@ def updateDisplay():
     # update display
     sprites = blocks + power_ups + [paddle] + balls
     game.updateScreen(sprites)
+
+    # print screen
     game.printScreen()
     sys.stdout.flush()
 
@@ -220,7 +221,6 @@ def updateDisplay():
 
 def renderAndRemove(sprite_list, sprite):
     updateDisplay()
-    sys.stdout.flush()
     sprite.clearOldPosition(game.game_window)
     sprite_list.remove(sprite)
 
@@ -270,13 +270,6 @@ def advanceLevel(game_window, level):
 def initialSetup():
     rt.enableRawMode()
     rt.hideCursor()
-    rt.removeKeyboardDelay()
-
-    # create sprites
-    advanceLevel(game.game_window, 1)
-
-    # render screen
-    game.printScreen(full=True)
 
     # play music
     mixer.init()
@@ -288,24 +281,101 @@ def initialSetup():
             "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav")}
 
 
+def startGame():
+    # initialise settings
+    rt.removeKeyboardDelay()
+
+    # reset game timer
+    game.startTimer()
+
+    # create sprites
+    advanceLevel(game.game_window, 1)
+
+    # render screen
+    game.printScreen()
+    sys.stdout.flush()
+
+
 # -------------------------------------------------------------------------------------------------------
-def gameloop():
-    brick_sounds = initialSetup()
+def startScreen():
+    game.reset()
+    game.renderStartScreen()
+    game.printScreen(full=True)
+    sys.stdout.flush()
 
     running = True
-    ball_launched = False
-
-    # to decrease speed of ball and power up movement on screen wrt FPS
-    move_ball_counter = 0
-    move_powerup_counter = 0
-
     while running:
+
         # if key has been hit
         if rt.kbhit():
             char = rt.getInputChar()
 
             # check for events
-            if char == 3:
+            if char == 3 or char == 113:
+                rt.disableRawMode()
+                rt.showCursor()
+                return False
+
+            # start game
+            if char == 10:
+                game.clearScreen()
+                return True
+
+
+def endScreen():
+    rt.resetKeyboardDelay()
+    game.renderEndScreen()
+    game.printScreen()
+    sys.stdout.flush()
+
+    running = True
+    while running:
+
+        # if key has been hit
+        if rt.kbhit():
+            char = rt.getInputChar()
+
+            # check for events
+            if char == 3 or char == 113:
+                rt.disableRawMode()
+                rt.showCursor()
+                return False
+
+            # restart game
+            if char == 10:
+                return True
+
+
+def gameloop():
+    brick_sounds = initialSetup()
+
+    # to decrease speed of ball and power up movement on screen wrt FPS
+    move_ball_counter = 0
+    move_powerup_counter = 0
+
+    running = True
+    started = False
+    done = False
+    while running:
+
+        if done:
+            if not endScreen():
+                break
+            started = False
+            done = False
+
+        if not started:
+            if not startScreen():
+                break
+            started = True
+            startGame()
+
+        # if key has been hit
+        if rt.kbhit():
+            char = rt.getInputChar()
+
+            # check for events
+            if char == 3 or char == 113:
                 rt.disableRawMode()
                 rt.showCursor()
                 rt.resetKeyboardDelay()
@@ -351,7 +421,8 @@ def gameloop():
         if not balls:
             game.decreaseLives()
             if game.lives == 0:
-                running = False
+                done = True
+                # running = False
             else:
                 respawn(game.game_window)
                 time.sleep(0.5)
@@ -362,7 +433,8 @@ def gameloop():
             if game.level <= game.total_levels:
                 advanceLevel(game.game_window, game.level)  # go to next level
             else:
-                running = False  # all levels done
+                done = True
+                # running = False  # all levels done
 
         # update display based on FPS
         updateDisplay()

@@ -28,14 +28,21 @@ class Game:
                                        self.left_margin: self.left_margin + self.width]
 
         self.FPS = config.FPS
-        self.total_levels = 3
+        self.total_levels = config.TOTAL_LEVELS
         self.level = 1
-        self.lives = 3
+        self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
 
-    def init(self):
         self.createGameBox()
+
+    def reset(self):
+        self.level = 1
+        self.lives = config.TOTAL_LIVES
+        self.score = 0
+        self.start_time = None
+
+    def startTimer(self):
         self.start_time = datetime.now()
 
     def createGameBox(self):
@@ -67,36 +74,31 @@ class Game:
         self.screen[self.top_margin - 2, title_margin + len(title)] = Style.RESET_ALL + " "
 
         # time
-        seconds = int((datetime.now() - self.start_time).total_seconds())
+        seconds = int((datetime.now() - (self.start_time if self.start_time is not None else datetime.now())).total_seconds())
         time_text = "{:0>8}".format(str(timedelta(seconds=seconds)))
-        self.screen[self.top_margin - 2, self.left_margin: self.left_margin + len(time_text)] = list(time_text)
+        self.screen[self.top_margin - 2, self.left_margin - 1: self.left_margin - 1 + len(time_text)] = list(time_text)
 
         # score
-        score_text = f"Score: {self.score}"
-        self.screen[self.top_margin - 2, self.columns - self.right_margin - len(score_text) + 2: self.columns - self.right_margin + 2] = list(score_text)
+        score_text = f"    Score: {self.score}"
+        self.screen[self.top_margin - 2, self.columns - self.right_margin - len(score_text) + 1: self.columns - self.right_margin + 1] = list(score_text)
 
         # level
         level_text = f"Level: {self.level}"
-        self.screen[self.rows - self.bottom_margin + 1, self.left_margin: self.left_margin + len(level_text)] = list(level_text)
+        self.screen[self.rows - self.bottom_margin + 1, self.left_margin - 1: self.left_margin - 1 + len(level_text)] = list(level_text)
 
         # lives
-        lives_text = f"Lives: {self.lives}"
-        self.screen[self.rows - self.bottom_margin + 1, self.columns - self.right_margin - len(lives_text) + 1: self.columns - self.right_margin + 2] = list(" " + lives_text)
+        lives_text = f" Lives: {self.lives}"
+        self.screen[self.rows - self.bottom_margin + 1, self.columns - self.right_margin - len(lives_text) + 1: self.columns - self.right_margin + 1] = list(lives_text)
 
         # print top info bar
         print(f"\033[{self.top_margin - 1};{self.left_margin}H", end="")
         for w in range(self.width + 2):
-            print(self.screen[self.top_margin - 2, self.left_margin + w], end="")
+            print(self.screen[self.top_margin - 2, self.left_margin - 1 + w], end="")
 
         # print bottom info bar
-        print(f"\033[{self.top_margin + self.height + 2};{self.left_margin}H", end="")
+        print(f"\033[{self.rows - self.bottom_margin + 2};{self.left_margin}H", end="")
         for w in range(self.width + 2):
-            print(self.screen[self.top_margin + self.height + 1, self.left_margin + w], end="")
-
-
-    def updateScreen(self, sprite_list):
-        for sprite in sprite_list:
-            sprite.render(self.game_window)
+            print(self.screen[self.rows - self.bottom_margin + 1, self.left_margin - 1 + w], end="")
 
     def printScreen(self, full=False):
         # if terminal too small for game, resize it
@@ -125,7 +127,22 @@ class Game:
 
                 # print(f"\033[{self.top_margin + self.height};0H\n")
 
-            self.printInfoBar()
+        self.printInfoBar()
+
+    def updateScreen(self, sprite_list):
+        for sprite in sprite_list:
+            sprite.render(self.game_window)
+
+    def clearScreen(self):
+        self.game_window.fill(" ")
+
+    def renderStartScreen(self):
+        self.clearScreen()
+        self.game_window[self.height // 2, self.width // 2] = "S"
+
+    def renderEndScreen(self):
+        self.clearScreen()
+        self.game_window[self.height // 2, self.width // 2] = "E"
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
