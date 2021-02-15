@@ -100,3 +100,26 @@ class Levels:
                 blocks.append(block)
 
         return blocks
+
+    @staticmethod
+    def level5(game_width):
+        blocks = []
+        width = 6
+        height = 1
+
+        max_horizontal_blocks = 9
+        max_vertical_blocks = 7
+        start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
+        start_y = 3
+        colors = ["red", "yellow", "green", "blue", "green", "yellow", "red"]
+        invisible_new_colors = ["green", "red", "yellow", "blue", "yellow", "red", "green"]
+
+        for r in range(max_vertical_blocks):
+            for c in range(max_horizontal_blocks):
+                if (r % 2 == 0 and c % 2 == 0) or (r % 2 != 0 and c % 2 != 0):
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, colors[r])
+                else:
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, None, invisible_new_colors[r])
+                blocks.append(block)
+
+        return blocks
