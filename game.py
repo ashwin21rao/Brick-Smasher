@@ -220,6 +220,8 @@ class Game:
             self.score += 20
         elif block_color == "red":
             self.score += 30
+        elif block_color == "blue":
+            self.score += 5
         elif block_color is None:
             self.addBlockScore(invisible_new_color, None)
             self.score += 10
