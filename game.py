@@ -82,12 +82,12 @@ class Game:
         self.screen[self.rows - self.top_margin + 1, self.columns - self.left_margin - len(lives_text) + 1: self.columns - self.left_margin + 2] = list(" " + lives_text)
 
         # print top info bar
-        print(f"\033[{self.top_margin - 2};{self.left_margin}H", end="")
+        print(f"\033[{self.top_margin - 1};{self.left_margin}H", end="")
         for w in range(self.width + 2):
             print(self.screen[self.top_margin - 2, self.left_margin + w], end="")
 
         # print bottom info bar
-        print(f"\033[{self.top_margin + self.height + 1};{self.left_margin}H", end="")
+        print(f"\033[{self.top_margin + self.height + 2};{self.left_margin}H", end="")
         for w in range(self.width + 2):
             print(self.screen[self.top_margin + self.height + 1, self.left_margin + w], end="")
 
@@ -98,7 +98,7 @@ class Game:
 
     def printScreen(self, full=False):
         # if terminal too small for game, resize it
-        print(f"\33[8;{self.rows};{self.columns}t")
+        print(f"\33[8;{self.rows};{self.columns}t", end="")
 
         # print screen
         if full:
@@ -114,7 +114,7 @@ class Game:
         else:
             for h in range(self.height):
                 # print left vertical column (needed to reset background)
-                print(f"\033[{self.top_margin + h};{self.left_margin}H" +
+                print(f"\033[{self.top_margin + h + 1};{self.left_margin}H" +
                       self.screen[self.top_margin, self.left_margin - 1], end="")
 
                 # print game window
