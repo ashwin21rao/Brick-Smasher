@@ -99,6 +99,8 @@ def launchBall(char, ball, paddle):
 
 
 def activatePowerUp(power_up):
+    game.addPowerUpScore()
+
     if power_up.type == "EXPAND_PADDLE":
         power_up.activate(paddle, game.game_window)
         PowerUpTypes.pop(power_up.type, None)
@@ -158,7 +160,7 @@ def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
     block.handleCollision(game_window, audio_sounds)
     if block.getStrength() < 0:
-        game.incrementScore(block.original_color, block.invisible_new_color)
+        game.addBlockScore(block.original_color, block.invisible_new_color)
         blocks.remove(block)
 
     # create power up on collision every 8 collisions on average and if score is above threshold
