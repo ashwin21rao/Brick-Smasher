@@ -7,7 +7,7 @@ import config
 
 
 class Game:
-    def __init__(self, width=75, height=34):
+    def __init__(self, width=config.DEFAULT_WINDOW_WIDTH, height=config.DEFAULT_WINDOW_HEIGHT):
         self.width = width  # width of game screen
         self.height = height  # height of game screen
 
@@ -60,7 +60,7 @@ class Game:
 
     def printInfoBar(self):
         # title
-        title = f"BRICK SMASH r:{self.rows} c:{self.columns} h:{self.height} w:{self.width}"
+        title = "BRICK SMASH"
         title_margin = self.left_margin + (self.width - len(title)) // 2
         self.screen[self.top_margin - 2, title_margin: title_margin + len(title)] = list(title)
         self.screen[self.top_margin - 2, title_margin - 1] = Style.BRIGHT + " "
