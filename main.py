@@ -167,10 +167,10 @@ def activatePowerUp(power_up, powerup_sound):
         power_up.activate(game)
 
 
-def deactivatePowerUps():
+def deactivatePowerUps(reset_all=False):
     to_deactivate = [power_up for power_up, time in activated_power_ups.items()
                      if power_up.can_deactivate and
-                     int((datetime.now() - time).total_seconds()) > config.POWERUP_ACTIVATION_TIME]
+                     (reset_all or int((datetime.now() - time).total_seconds()) > config.POWERUP_ACTIVATION_TIME)]
 
     for power_up in to_deactivate:
         if power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
@@ -181,6 +181,8 @@ def deactivatePowerUps():
             power_up.deactivate(blocks)
         elif power_up.type == "PADDLE_GRAB":
             power_up.deactivate(balls)
+        elif power_up.type == "SKIP_LEVEL":
+            power_up.deactivate(game)
 
         activated_power_ups.pop(power_up, None)
 
@@ -269,43 +271,33 @@ def renderAndRemove(sprite_list, sprite):
     sprite_list.remove(sprite)
 
 
-def resetPowerUps():
-    for block in blocks:
-        block.kill_on_collision = False
-
-    game.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
-    game.skip_level = False
-
-
 def respawn(game_window):
-    if paddle is not None:
-        paddle.clearOldPosition(game_window)
-
-    global power_ups
-    resetPowerUps()
+    global power_ups, activated_power_ups
+    deactivatePowerUps(reset_all=True)
     for power_up in power_ups:
         power_up.clearOldPosition(game_window)
-    power_ups = []
 
+    power_ups = []
+    activated_power_ups = {}
+
+    if paddle is not None:
+        paddle.clearOldPosition(game_window)
     createPaddle(game_window.shape[1], game_window.shape[0])
     createBall(paddle)
 
 
 def advanceLevel(game_window, level):
-    global balls, blocks, power_ups
+    global balls, blocks
     for block in blocks:
         block.clearOldPosition(game_window)
     for ball in balls:
         ball.clearOldPosition(game_window)
-    for power_up in power_ups:
-        power_up.clearOldPosition(game_window)
 
     blocks = []
     balls = []
-    power_ups = []
 
-    createBlocks(game.width, level)
     respawn(game_window)
+    createBlocks(game.width, level)
 
 
 def initialSetup():

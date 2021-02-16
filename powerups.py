@@ -207,7 +207,10 @@ class SkipLevel(PowerUp):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
         self.render = partial(super().render, powerup_text="SK")
-        self.can_deactivate = False
+        self.can_deactivate = True
 
     def activate(self, game):
         game.skip_level = True
+
+    def deactivate(self, game):
+        game.skip_level = False
