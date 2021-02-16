@@ -34,6 +34,10 @@ class Game:
         self.score = 0
         self.start_time = None
         self.ticks = None
+        self.won = False
+
+        self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
+        self.powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
 
         self.createGameBox()
 
@@ -42,6 +46,7 @@ class Game:
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
+        self.won = False
 
     def startTimer(self):
         self.start_time = datetime.now()
@@ -185,7 +190,7 @@ class Game:
         self.clearScreen()
 
         y = self.top_margin + 12
-        self.renderCenterText("Game Over!", y)
+        self.renderCenterText(f"{'You Win!' if self.won else 'Game Over!'}", y)
         self.renderCenterText("Press enter to play again, q to quit", y + 2)
 
         self.renderCenterText(f"Score: {self.score}", y + 4)

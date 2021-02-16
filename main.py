@@ -28,10 +28,6 @@ obstacles = []
 # globals
 PowerUpTypes = config.POWER_UP_TYPES.copy()
 
-# to decrease speed of ball and power up movement on screen wrt FPS
-ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
-powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
-
 
 def log(str):
     f = open("output.txt", "a")
@@ -125,8 +121,7 @@ def activatePowerUp(power_up):
         power_up.activate(balls, blocks)
 
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
-        global ball_speed_coefficient
-        ball_speed_coefficient = power_up.activate(ball_speed_coefficient)
+        game.ball_speed_coefficient = power_up.activate(game.ball_speed_coefficient)
 
     elif power_up.type == "EXTRA_LIFE":
         game.lives = power_up.activate(game.lives)
@@ -163,6 +158,7 @@ def handleBlockCollision(block, game_window, audio_sounds):
     if game.score > config.POWERUP_SCORE_THRESHOLD:
         if np.random.choice([0, 1], p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
             createPowerUp(block, np.random.choice(list(PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
+            # createPowerUp(block, random.choice(list(PowerUpTypes.values())))
 
 
 def checkBlockCollision(ball, game_window, audio_sounds):
@@ -228,8 +224,7 @@ def resetPowerUps():
     for block in blocks:
         block.kill_on_collision = False
 
-    global ball_speed_coefficient
-    ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
+    game.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
 
     global PowerUpTypes
     PowerUpTypes = config.POWER_UP_TYPES.copy()
@@ -421,24 +416,23 @@ def gameloop():
             game.decreaseLives()
             if game.lives == 0:
                 done = True
-                # running = False
             else:
                 respawn(game.game_window)
                 time.sleep(0.5)
 
         # check if level is complete
         elif game.levelComplete(blocks):
-            game.incrementLevel()
-            if game.level <= game.total_levels:
+            if game.level + 1 <= game.total_levels:
+                game.incrementLevel()
                 advanceLevel(game.game_window, game.level)  # go to next level
             else:
-                done = True
-                # running = False  # all levels done
+                game.won = True
+                done = True # all levels done
 
         # update display based on FPS
         updateDisplay()
-        move_ball_counter = (move_ball_counter + 1) % ball_speed_coefficient
-        move_powerup_counter = (move_powerup_counter + 1) % powerup_speed_coefficient
+        move_ball_counter = (move_ball_counter + 1) % game.ball_speed_coefficient
+        move_powerup_counter = (move_powerup_counter + 1) % game.powerup_speed_coefficient
 
 
 gameloop()
