@@ -41,7 +41,7 @@ class Block(Sprite):
 
     def playSound(self, brick_sounds):
         if self.kill_on_collision:
-            brick_sounds["explosive_brick_sound"].play()
+            brick_sounds["thru_ball_sound"].play()
         elif self.color == "blue":
             brick_sounds["indestructible_brick_sound"].play()
         elif self.color is None:

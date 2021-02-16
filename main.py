@@ -317,7 +317,8 @@ def initialSetup():
             "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav"),
             "invisible_brick_sound": mixer.Sound("extras/invisible_brick.wav"),
             "activate_powerup_sound": mixer.Sound("extras/powerup.wav"),
-            "wall_sound": mixer.Sound("extras/wall_sound.wav")}
+            "wall_sound": mixer.Sound("extras/wall_sound.wav"),
+            "thru_ball_sound": mixer.Sound("extras/thru_ball.wav")}
 
 
 def startGame():
