@@ -2,7 +2,8 @@ from sprites import Sprite
 
 
 class Block(Sprite):
-    colors = ["green", "yellow", "red", None, "blue"]
+    type = "REGULAR_BLOCK"
+    colors = ["green", "yellow", "red", None, "blue", "magenta"]
 
     def __init__(self, x_coordinate, y_coordinate, width, height, color, invisible_new_color=None):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
@@ -14,7 +15,7 @@ class Block(Sprite):
     def getStrength(self):
         return self.strength
 
-    def handleCollision(self, game_window):
+    def handleCollision(self, game_window, blocks):
         if self.kill_on_collision:
             self.strength = -1
             self.clearOldPosition(game_window)
@@ -47,3 +48,42 @@ class Block(Sprite):
             brick_sounds["invisible_brick_sound"].play()
         else:
             brick_sounds["regular_brick_sound"].play()
+
+
+class ExplosiveBlock(Block):
+    type = "EXPLOSIVE_BLOCK"
+
+    def __init__(self, x_coordinate, y_coordinate, width, height):
+        super().__init__(x_coordinate, y_coordinate, width, height, "magenta")
+
+    def getAdjacentBlocks(self, blocks):
+        adj_blocks = []
+        for block in blocks:
+            if block.y == self.y - 1 - block.height or block.y == self.y + self.height + 1:
+                if block.x == self.x - 1 - block.width or block.x == self.x or block.x == self.x + self.width + 1:
+                    adj_blocks.append(block)
+            elif block.y == self.y:
+                if block.x == self.x - 1 - block.width or block.x == self.x + self.width + 1:
+                    adj_blocks.append(block)
+
+        return adj_blocks
+
+    def killExplosiveBlocks(self, blocks):
+        if self.strength == -1:
+            return
+        self.strength = -1
+
+        for block in self.getAdjacentBlocks(blocks):
+            if block.type == "EXPLOSIVE_BLOCK":
+                block.killExplosiveBlocks(blocks)
+            else:
+                block.strength = -1
+
+    def handleCollision(self, game_window, blocks):
+        self.killExplosiveBlocks(blocks)
+        for block in blocks:
+            if block.strength == -1:
+                block.clearOldPosition(game_window)
+
+    def playSound(self, brick_sounds):
+        brick_sounds["explosive_brick_sound"].play()

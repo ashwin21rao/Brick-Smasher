@@ -190,6 +190,10 @@ class Game:
         self.screen[y + 19, m - 1] = Back.BLUE + " "
         self.screen[y + 19, m + 7] = Back.RESET + " "
 
+        m = self.renderCenterText(f"        : Exploding Brick", y + 21)
+        self.screen[y + 21, m - 1] = Back.MAGENTA + " "
+        self.screen[y + 21, m + 7] = Back.RESET + " "
+
     def renderEndScreen(self):
         self.clearScreen()
 
@@ -229,7 +233,7 @@ class Game:
             self.score += 20
         elif block_color == "red":
             self.score += 30
-        elif block_color == "blue":
+        elif block_color == "blue" or block_color == "magenta":
             self.score += 5
         elif block_color is None:
             self.addBlockScore(invisible_new_color, None)

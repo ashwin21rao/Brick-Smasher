@@ -199,10 +199,13 @@ def checkCollision(ball, game_window, audio_sounds):
 def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
     block.playSound(audio_sounds)
-    block.handleCollision(game_window)
-    if block.getStrength() < 0:
-        game.addBlockScore(block.original_color, block.invisible_new_color)
-        blocks.remove(block)
+
+    # handle block collision
+    block.handleCollision(game_window, blocks)
+    for b in blocks:
+        if b.getStrength() < 0:
+            game.addBlockScore(b.original_color, b.invisible_new_color)
+    blocks = [b for b in blocks if b.getStrength() >= 0]
 
     # create power up probabilistically on collision and if score is above threshold
     if game.score > config.POWERUP_SCORE_THRESHOLD:

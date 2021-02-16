@@ -1,4 +1,4 @@
-from blocks import Block
+from blocks import Block, ExplosiveBlock
 
 
 class Levels:
@@ -105,23 +105,27 @@ class Levels:
     @staticmethod
     def level5(game_width):
         blocks = []
-        width = 6
+        width = 5
         height = 1
 
-        max_horizontal_blocks = 9
-        max_vertical_blocks = 7
+        max_horizontal_blocks = 11
+        max_vertical_blocks = 11
         start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
         start_y = 3
-        colors = ["red", "yellow", "green", "blue", "green", "yellow", "red"]
-        invisible_new_colors = ["green", "red", "yellow", "blue", "yellow", "red", "green"]
 
         for r in range(max_vertical_blocks):
             for c in range(max_horizontal_blocks):
-                if (r % 2 == 0 and c % 2 == 0) or (r % 2 != 0 and c % 2 != 0):
-                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, colors[r])
+                if (r == 5 and c not in [0, 1, 9, 10]) or (c == 5 and r not in [0, 1, 9, 10]) \
+                    or (r, c) in [(2, 2), (2, 8), (8, 2), (8, 8)]:
+                    block = ExplosiveBlock(start_x + c * (width + 1), start_y + r * (height + 1), width, height)
                 else:
-                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, None,
-                                  invisible_new_colors[r])
+                    if (r in range(1, 4) and c in range(1, 4)) or (r in range(7, 10) and c in range(1, 4)) or \
+                       (r in range(1, 4) and c in range(7, 10)) or (r in range(7, 10) and c in range(7, 10)):
+                        color = "yellow"
+                    else:
+                        color = "red"
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color)
+
                 blocks.append(block)
 
         return blocks
