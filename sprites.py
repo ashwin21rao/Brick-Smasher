@@ -11,7 +11,6 @@ class Sprite:
         self.color = color
 
     def render(self, game_window):
-        # print("HERE (sprite render)", self, self.x, self.width, "\r")
         game_width = game_window.shape[1]
 
         if self.color is not None:

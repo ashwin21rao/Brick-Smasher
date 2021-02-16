@@ -117,12 +117,12 @@ class FastBall(PowerUp):
         self.can_deactivate = True
         self.initial_ball_speed_coefficient = initial_ball_speed_coefficient
 
-    def activate(self, ball_speed_coefficient):
-        return ball_speed_coefficient - self.speed_multiplier \
-               if ball_speed_coefficient - self.speed_multiplier > 0 else 1
+    def activate(self, game):
+        game.ball_speed_coefficient = game.ball_speed_coefficient - self.speed_multiplier \
+                                      if game.ball_speed_coefficient - self.speed_multiplier > 0 else 1
 
-    def deactivate(self):
-        return self.initial_ball_speed_coefficient
+    def deactivate(self, game):
+        game.ball_speed_coefficient = self.initial_ball_speed_coefficient
 
 
 class SlowBall(PowerUp):
@@ -136,11 +136,11 @@ class SlowBall(PowerUp):
         self.can_deactivate = True
         self.initial_ball_speed_coefficient = initial_ball_speed_coefficient
 
-    def activate(self, ball_speed_coefficient):
-        return ball_speed_coefficient + self.speed_multiplier
+    def activate(self, game):
+        game.ball_speed_coefficient += self.speed_multiplier
 
-    def deactivate(self):
-        return self.initial_ball_speed_coefficient
+    def deactivate(self, game):
+        game.ball_speed_coefficient = self.initial_ball_speed_coefficient
 
 
 class ExtraLife(PowerUp):
@@ -152,8 +152,8 @@ class ExtraLife(PowerUp):
         self.render = partial(super().render, powerup_text="XL")
         self.can_deactivate = False
 
-    def activate(self, lives):
-        return lives + self.life_multiplier
+    def activate(self, game):
+        game.lives += self.life_multiplier
 
 
 class MultiplyBalls(PowerUp):

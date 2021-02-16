@@ -1,6 +1,5 @@
 import os
 import numpy as np
-import time
 from datetime import datetime, timedelta
 from colorama import Fore, Back, Style
 import config
@@ -14,9 +13,6 @@ class Game:
         columns, rows = os.get_terminal_size()
         self.rows = height + 10 if rows < height + 6 else rows  # rows in terminal
         self.columns = width + 20 if columns < width + 6 else columns  # columns in terminal
-
-        # self.rows = height + 10
-        # self.columns = width + 20
 
         self.left_margin = (self.columns - self.width) // 2
         self.right_margin = self.left_margin + ((self.columns - self.width) % 2)
@@ -152,8 +148,6 @@ class Game:
                 # print game window
                 for w in range(self.width):
                     print(self.game_window[h][w], end="")
-
-                # print(f"\033[{self.top_margin + self.height};0H\n")
 
         self.printInfoBar()
 

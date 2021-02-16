@@ -143,14 +143,14 @@ def activatePowerUp(power_up, powerup_sound):
         # deactivate opposite powerup
         for p_up in activated_power_ups:
             if p_up.type == opposite_type:
-                game.ball_speed_coefficient = p_up.deactivate()
+                p_up.deactivate(game)
                 activated_power_ups.pop(p_up, None)
                 break
 
-        game.ball_speed_coefficient = power_up.activate(game.ball_speed_coefficient)
+        power_up.activate(game)
 
     elif power_up.type == "EXTRA_LIFE":
-        game.lives = power_up.activate(game.lives)
+        power_up.activate(game)
 
     elif power_up.type == "MULTIPLY_BALLS":
         power_up.activate(balls, game.game_window)
@@ -174,7 +174,7 @@ def deactivatePowerUps():
 
     for power_up in to_deactivate:
         if power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
-            game.ball_speed_coefficient = power_up.deactivate()
+            power_up.deactivate(game)
         elif power_up.type == "THRU_BALL":
             power_up.deactivate(balls, blocks)
         elif power_up.type == "FIRE_BALL":
