@@ -1,15 +1,11 @@
-import os
 import sys
 import time
-import random
 import numpy as np
 from datetime import datetime
-from colorama import Fore, Back, Style
 from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, PaddleGrab
 from levels import Levels
 from rawterminal import RawTerminal as rt
 import config
@@ -495,5 +491,3 @@ def gameloop():
 
 
 gameloop()
-
-# {'BLACK': '\x1b[40m', 'BLUE': '\x1b[44m', 'CYAN': '\x1b[46m', 'GREEN': '\x1b[42m', 'LIGHTBLACK_EX': '\x1b[100m', 'LIGHTBLUE_EX': '\x1b[104m', 'LIGHTCYAN_EX': '\x1b[106m', 'LIGHTGREEN_EX': '\x1b[102m', 'LIGHTMAGENTA_EX': '\x1b[105m', 'LIGHTRED_EX': '\x1b[101m', 'LIGHTWHITE_EX': '\x1b[107m', 'LIGHTYELLOW_EX': '\x1b[103m', 'MAGENTA': '\x1b[45m', 'RED': '\x1b[41m', 'RESET': '\x1b[49m', 'WHITE': '\x1b[47m', 'YELLOW': '\x1b[43m'}   Desi

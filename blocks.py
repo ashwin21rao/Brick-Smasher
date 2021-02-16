@@ -30,7 +30,6 @@ class Block(Sprite):
         else:
             self.strength -= 1
 
-
         if self.strength > -1:
             self.color = Block.colors[self.strength]
         else:

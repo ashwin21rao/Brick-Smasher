@@ -2,7 +2,6 @@ import copy
 from sprites import Sprite, SpriteCollisionMixin
 from colorama import Back
 from functools import partial
-from balls import Ball
 
 
 class PowerUp(Sprite, SpriteCollisionMixin):
@@ -17,9 +16,11 @@ class PowerUp(Sprite, SpriteCollisionMixin):
 
         if self.color is not None:
             if self.x < game_width:
-                game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + game_window[self.y: self.y + self.height, self.x]
+                game_window[self.y: self.y + self.height, self.x] = \
+                    Back.__getattribute__(self.color.upper()) + game_window[self.y: self.y + self.height, self.x]
             if self.x + self.width < game_width:
-                game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + game_window[self.y: self.y + self.height, self.x + self.width]
+                game_window[self.y: self.y + self.height, self.x + self.width] = \
+                    Back.RESET + game_window[self.y: self.y + self.height, self.x + self.width]
 
     def clearOldPosition(self, game_window):
         game_window[self.y, self.x: self.x + self.width] = " "
@@ -108,7 +109,8 @@ class FireBall(PowerUp):
 class FastBall(PowerUp):
     type = "FAST_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1, initial_ball_speed_coefficient=3):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1,
+                 initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
         self.render = partial(super().render, powerup_text="FB")
@@ -116,7 +118,8 @@ class FastBall(PowerUp):
         self.initial_ball_speed_coefficient = initial_ball_speed_coefficient
 
     def activate(self, ball_speed_coefficient):
-        return ball_speed_coefficient - self.speed_multiplier if ball_speed_coefficient - self.speed_multiplier > 0 else 1
+        return ball_speed_coefficient - self.speed_multiplier \
+               if ball_speed_coefficient - self.speed_multiplier > 0 else 1
 
     def deactivate(self):
         return self.initial_ball_speed_coefficient
@@ -125,7 +128,8 @@ class FastBall(PowerUp):
 class SlowBall(PowerUp):
     type = "SLOW_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1, initial_ball_speed_coefficient=3):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1,
+                 initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
         self.render = partial(super().render, powerup_text="SB")

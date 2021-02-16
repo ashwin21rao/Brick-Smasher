@@ -96,7 +96,8 @@ class Levels:
                         color = colors[i]
                         invisible_new_color = invisible_new_colors[i]
                         break
-                block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color, invisible_new_color)
+                block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color,
+                              invisible_new_color)
                 blocks.append(block)
 
         return blocks
@@ -119,7 +120,8 @@ class Levels:
                 if (r % 2 == 0 and c % 2 == 0) or (r % 2 != 0 and c % 2 != 0):
                     block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, colors[r])
                 else:
-                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, None, invisible_new_colors[r])
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, None,
+                                  invisible_new_colors[r])
                 blocks.append(block)
 
         return blocks

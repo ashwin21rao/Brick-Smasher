@@ -2,7 +2,8 @@ from sprites import MovableSprite, SpriteCollisionMixin
 
 
 class Ball(MovableSprite, SpriteCollisionMixin):
-    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=-1, launched=False, enable_paddle_grab=False):
+    def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1, y_speed=-1, launched=False,
+                 enable_paddle_grab=False):
         super().__init__(x_coordinate, y_coordinate, width, height, color, x_speed)
         self.y_speed = y_speed
         self.collidable = True
@@ -18,17 +19,6 @@ class Ball(MovableSprite, SpriteCollisionMixin):
     def reflectHorizontalAndVertical(self):
         self.x_speed *= -1
         self.y_speed *= -1
-
-    # def checkHorizontalCollision(self, sprite):
-    #     return (self.y + self.height == sprite.y and self.y_speed > 0 or self.y == sprite.y + sprite.height and self.y_speed < 0) and \
-    #            (self.x + self.width - 1 >= sprite.x and self.x <= sprite.x + sprite.width - 1)
-    #
-    # def checkVerticalCollision(self, sprite):
-    #     return (self.x + self.width == sprite.x and self.x_speed > 0 or self.x == sprite.x + sprite.width and self.x_speed < 0) and \
-    #            (self.y + self.height - 1 >= sprite.y and self.y <= sprite.y + sprite.height - 1)
-    #
-    # def checkCornerCollision(self, sprite):
-    #     return not self.checkHorizontalCollision(sprite) and not self.checkVerticalCollision(sprite)
 
     def handleCornerCollision(self, sprite):
         # top left corner
@@ -73,22 +63,6 @@ class Ball(MovableSprite, SpriteCollisionMixin):
                     if self.x == x:
                         self.x_speed = (abs(x - mid + (1 if x > mid else -1 if x < mid else 0)) // 2) * \
                                        (-1 if x < mid else 1)
-
-                # print(f"hereeeeee {abs(self.x_speed)} {self.x + self.width} {sprite.x}", end="")
-
-                # for x in range(mid+1, self.x + self.width + 1):
-                #     if self.x == x:
-                #         self.x_speed = (x - mid + 1) / 2
-                # for x in range(self.x - 2, mid):
-                #     if self.x == x:
-                #         self.x_speed = (x - mid - 1) / 2
-
-                # if self.x == sprite.x + sprite.width // 2 - self.width // 2:
-                #     self.x_speed = 0
-                # elif self.x > sprite.x + sprite.width // 2 - self.width // 2:
-                #     self.x_speed = 2
-                # else:
-                #     self.x_speed = -2
 
                 if self.enable_paddle_grab:
                     self.launched = False

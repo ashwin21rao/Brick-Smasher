@@ -12,8 +12,8 @@ class Game:
         self.height = height  # height of game screen
 
         columns, rows = os.get_terminal_size()
-        self.rows = height + 10 if rows < height + 6 else rows          # rows in terminal
-        self.columns = width + 20 if columns < width + 6 else columns   # columns in terminal
+        self.rows = height + 10 if rows < height + 6 else rows  # rows in terminal
+        self.columns = width + 20 if columns < width + 6 else columns  # columns in terminal
 
         # self.rows = height + 10
         # self.columns = width + 20
@@ -95,21 +95,28 @@ class Game:
         self.screen[self.top_margin - 2, title_margin + len(title)] = Style.RESET_ALL + " "
 
         # time
-        self.ticks = int((datetime.now() - (self.start_time if self.start_time is not None else datetime.now())).total_seconds())
+        self.ticks = int(
+            (datetime.now() - (self.start_time if self.start_time is not None else datetime.now())).total_seconds())
         time_text = "{:0>8}".format(str(timedelta(seconds=self.ticks)))
         self.screen[self.top_margin - 2, self.left_margin - 1: self.left_margin - 1 + len(time_text)] = list(time_text)
 
         # score
         score_text = f"    Score: {self.score}"
-        self.screen[self.top_margin - 2, self.columns - self.right_margin - len(score_text) + 1: self.columns - self.right_margin + 1] = list(score_text)
+        self.screen[self.top_margin - 2,
+                    self.columns - self.right_margin - len(score_text) + 1:
+                    self.columns - self.right_margin + 1] = list(score_text)
 
         # level
         level_text = f"Level: {self.level}"
-        self.screen[self.rows - self.bottom_margin + 1, self.left_margin - 1: self.left_margin - 1 + len(level_text)] = list(level_text)
+        self.screen[self.rows - self.bottom_margin + 1,
+                    self.left_margin - 1:
+                    self.left_margin - 1 + len(level_text)] = list(level_text)
 
         # lives
         lives_text = f" Lives: {self.lives}"
-        self.screen[self.rows - self.bottom_margin + 1, self.columns - self.right_margin - len(lives_text) + 1: self.columns - self.right_margin + 1] = list(lives_text)
+        self.screen[self.rows - self.bottom_margin + 1,
+                    self.columns - self.right_margin - len(lives_text) + 1:
+                    self.columns - self.right_margin + 1] = list(lives_text)
 
         # print top info bar
         print(f"\033[{self.top_margin - 1};{self.left_margin}H", end="")

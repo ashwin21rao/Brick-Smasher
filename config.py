@@ -1,4 +1,5 @@
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, PaddleGrab, SkipLevel
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, \
+                     PaddleGrab, SkipLevel
 
 POWER_UP_TYPES = {
     ExpandPaddle.type: ExpandPaddle,
