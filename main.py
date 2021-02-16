@@ -167,6 +167,9 @@ def activatePowerUp(power_up, powerup_sound):
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
 
+    elif power_up.type == "SKIP_LEVEL":
+        power_up.activate(game)
+
 
 def deactivatePowerUps():
     to_deactivate = [power_up for power_up, time in activated_power_ups.items()
@@ -275,9 +278,7 @@ def resetPowerUps():
         block.kill_on_collision = False
 
     game.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
-
-    global PowerUpTypes
-    PowerUpTypes = config.POWER_UP_TYPES.copy()
+    game.skip_level = False
 
 
 def respawn(game_window):
@@ -479,7 +480,7 @@ def gameloop():
                 time.sleep(0.5)
 
         # check if level is complete
-        elif game.levelComplete(blocks):
+        elif game.levelComplete(blocks) or game.skip_level:
             if game.level + 1 <= game.total_levels:
                 game.incrementLevel()
                 advanceLevel(game.game_window, game.level)  # go to next level

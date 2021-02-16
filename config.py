@@ -1,4 +1,4 @@
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, PaddleGrab
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, PaddleGrab, SkipLevel
 
 POWER_UP_TYPES = {
     ExpandPaddle.type: ExpandPaddle,
@@ -9,7 +9,8 @@ POWER_UP_TYPES = {
     SlowBall.type: SlowBall,
     ExtraLife.type: ExtraLife,
     MultiplyBalls.type: MultiplyBalls,
-    PaddleGrab.type: PaddleGrab
+    PaddleGrab.type: PaddleGrab,
+    SkipLevel.type: SkipLevel
 }
 
 DEFAULT_WINDOW_WIDTH = 75
@@ -22,7 +23,7 @@ INITIAL_BALL_SPEED_COEFFICIENT = 3
 INITIAL_POWERUP_SPEED_COEFFICIENT = 5
 
 POWERUP_SCORE_THRESHOLD = 20
-POWERUP_PROBABILITIES = [0.10, 0.18, 0.06, 0.10, 0.18, 0.10, 0.06, 0.10, 0.12]
+POWERUP_PROBABILITIES = [0.10, 0.18, 0.065, 0.10, 0.18, 0.10, 0.06, 0.11, 0.10, 0.005]
 
-POWERUP_GENERATION_PROBABILITY = 0.10
+POWERUP_GENERATION_PROBABILITY = 0.50
 POWERUP_ACTIVATION_TIME = 10

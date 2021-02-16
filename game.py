@@ -35,6 +35,7 @@ class Game:
         self.start_time = None
         self.ticks = None
         self.won = False
+        self.skip_level = False
 
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
         self.powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
@@ -47,6 +48,7 @@ class Game:
         self.score = 0
         self.start_time = None
         self.won = False
+        self.skip_level = False
 
     def startTimer(self):
         self.start_time = datetime.now()
@@ -164,9 +166,10 @@ class Game:
         self.renderCenterText("POWERUPS:", y + 3)
 
         self.renderCenterText("EP: Expand Paddle        SP: Shrink Paddle", y + 5)
-        self.renderCenterText("TB: Thru Ball            MB: Multiply Balls", y + 6)
-        self.renderCenterText("FB: Fast Ball            SB: Slow Ball    ", y + 7)
-        self.renderCenterText("PG: Paddle Grab          XL: Extra Life    ", y + 8)
+        self.renderCenterText("TB: Thru Ball            FI: Fire Ball    ", y + 6)
+        self.renderCenterText("MB: Multiply Balls       PG: Paddle Grab  ", y + 7)
+        self.renderCenterText("FB: Fast Ball            SB: Slow Ball    ", y + 8)
+        self.renderCenterText("SK: Skip Level           XL: Extra Life    ", y + 9)
 
         self.renderCenterText("BLOCKS:", y + 11)
 

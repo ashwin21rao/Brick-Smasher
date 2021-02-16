@@ -194,3 +194,16 @@ class PaddleGrab(PowerUp):
             ball.enable_paddle_grab = False
             if not ball.launched:
                 ball.launch()
+
+
+class SkipLevel(PowerUp):
+    type = "SKIP_LEVEL"
+
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.life_multiplier = 1
+        self.render = partial(super().render, powerup_text="SK")
+        self.can_deactivate = False
+
+    def activate(self, game):
+        game.skip_level = True
