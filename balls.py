@@ -97,7 +97,7 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
             return False
 
-    def handleWallCollision(self, game_window):
+    def handleWallCollision(self, game_window, wall_sound):
         game_height, game_width = game_window.shape
         collided = False
 
@@ -112,6 +112,9 @@ class Ball(MovableSprite, SpriteCollisionMixin):
             self.y = 0 if self.y <= 0 else game_height - self.height
             self.reflectHorizontal()
             collided = True
+
+        if collided:
+            wall_sound.play()
 
         return collided
 

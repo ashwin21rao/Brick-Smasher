@@ -100,8 +100,9 @@ def launchBall(char, ball, paddle):
     return False
 
 
-def activatePowerUp(power_up):
+def activatePowerUp(power_up, powerup_sound):
     game.addPowerUpScore()
+    power_up.playSound(powerup_sound)
 
     # update activation time of powerup
     global activated_power_ups
@@ -110,6 +111,8 @@ def activatePowerUp(power_up):
 
     if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
+
+        # deactivate opposite powerup
         activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if
                                p_up.type != ("SHRINK_PADDLE" if power_up.type == "EXPAND_PADDLE" else "EXPAND_PADDLE")}
 
@@ -169,13 +172,14 @@ def deactivatePowerUps():
 def checkCollision(ball, game_window, audio_sounds):
     return checkBlockCollision(ball, game_window, audio_sounds) or \
            ball.handleCollision(paddle, obstacle="paddle") or \
-           ball.handleWallCollision(game_window)
+           ball.handleWallCollision(game_window, audio_sounds["wall_sound"])
 
 
 # WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
 def handleBlockCollision(block, game_window, audio_sounds):
     global blocks
-    block.handleCollision(game_window, audio_sounds)
+    block.playSound(audio_sounds)
+    block.handleCollision(game_window)
     if block.getStrength() < 0:
         game.addBlockScore(block.original_color, block.invisible_new_color)
         blocks.remove(block)
@@ -299,7 +303,10 @@ def initialSetup():
 
     return {"regular_brick_sound": mixer.Sound("extras/brick.wav"),
             "indestructible_brick_sound": mixer.Sound("extras/indestructible_brick.wav"),
-            "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav")}
+            "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav"),
+            "invisible_brick_sound": mixer.Sound("extras/invisible_brick.wav"),
+            "activate_powerup_sound": mixer.Sound("extras/powerup.wav"),
+            "wall_sound": mixer.Sound("extras/wall_sound.wav")}
 
 
 def startGame():
@@ -368,7 +375,7 @@ def endScreen():
 
 
 def gameloop():
-    brick_sounds = initialSetup()
+    game_sounds = initialSetup()
 
     # to decrease speed of ball and power up movement on screen wrt FPS
     move_ball_counter = 0
@@ -420,7 +427,7 @@ def gameloop():
                     renderAndRemove(power_ups, power_up)
                     break
                 elif power_up.ready(paddle):
-                    activatePowerUp(power_up)
+                    activatePowerUp(power_up, game_sounds["activate_powerup_sound"])
                     renderAndRemove(power_ups, power_up)
                     break
 
@@ -437,7 +444,7 @@ def gameloop():
                     if ball.isDead(game.game_window.shape[0]):
                         renderAndRemove(balls, ball)
                         break
-                    elif checkCollision(ball, game.game_window, brick_sounds):
+                    elif checkCollision(ball, game.game_window, game_sounds):
                         break
                     # time.sleep(0.1)
                     # updateDisplay()
@@ -469,4 +476,4 @@ def gameloop():
 
 gameloop()
 
-# {'BLACK': '\x1b[40m', 'BLUE': '\x1b[44m', 'CYAN': '\x1b[46m', 'GREEN': '\x1b[42m', 'LIGHTBLACK_EX': '\x1b[100m', 'LIGHTBLUE_EX': '\x1b[104m', 'LIGHTCYAN_EX': '\x1b[106m', 'LIGHTGREEN_EX': '\x1b[102m', 'LIGHTMAGENTA_EX': '\x1b[105m', 'LIGHTRED_EX': '\x1b[101m', 'LIGHTWHITE_EX': '\x1b[107m', 'LIGHTYELLOW_EX': '\x1b[103m', 'MAGENTA': '\x1b[45m', 'RED': '\x1b[41m', 'RESET': '\x1b[49m', 'WHITE': '\x1b[47m', 'YELLOW': '\x1b[43m'}
+# {'BLACK': '\x1b[40m', 'BLUE': '\x1b[44m', 'CYAN': '\x1b[46m', 'GREEN': '\x1b[42m', 'LIGHTBLACK_EX': '\x1b[100m', 'LIGHTBLUE_EX': '\x1b[104m', 'LIGHTCYAN_EX': '\x1b[106m', 'LIGHTGREEN_EX': '\x1b[102m', 'LIGHTMAGENTA_EX': '\x1b[105m', 'LIGHTRED_EX': '\x1b[101m', 'LIGHTWHITE_EX': '\x1b[107m', 'LIGHTYELLOW_EX': '\x1b[103m', 'MAGENTA': '\x1b[45m', 'RED': '\x1b[41m', 'RESET': '\x1b[49m', 'WHITE': '\x1b[47m', 'YELLOW': '\x1b[43m'}   Desi

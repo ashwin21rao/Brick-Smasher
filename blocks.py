@@ -14,25 +14,22 @@ class Block(Sprite):
     def getStrength(self):
         return self.strength
 
-    def handleCollision(self, game_window, brick_sounds):
+    def handleCollision(self, game_window):
         if self.kill_on_collision:
-            brick_sounds["explosive_brick_sound"].play()
             self.strength = -1
             self.clearOldPosition(game_window)
             return
 
         if self.color == "blue":
-            brick_sounds["indestructible_brick_sound"].play()
             return
 
-        brick_sounds["regular_brick_sound"].play()
-
-        # invisible brick changes to specified
+        # invisible brick changes to specified color
         if self.color is None:
             self.color = self.invisible_new_color
             self.strength = Block.colors.index(self.invisible_new_color)
         else:
             self.strength -= 1
+
 
         if self.strength > -1:
             self.color = Block.colors[self.strength]
@@ -41,3 +38,13 @@ class Block(Sprite):
 
     def killOnCollision(self):
         self.kill_on_collision = True
+
+    def playSound(self, brick_sounds):
+        if self.kill_on_collision:
+            brick_sounds["explosive_brick_sound"].play()
+        elif self.color == "blue":
+            brick_sounds["indestructible_brick_sound"].play()
+        elif self.color is None:
+            brick_sounds["invisible_brick_sound"].play()
+        else:
+            brick_sounds["regular_brick_sound"].play()

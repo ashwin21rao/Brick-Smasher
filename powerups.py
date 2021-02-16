@@ -39,6 +39,9 @@ class PowerUp(Sprite, SpriteCollisionMixin):
     def powerUpMissed(self, game_height):
         return self.y + self.height >= game_height
 
+    def playSound(self, powerup_sound):
+        powerup_sound.play()
+
 
 class ExpandPaddle(PowerUp):
     type = "EXPAND_PADDLE"

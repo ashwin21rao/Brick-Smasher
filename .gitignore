@@ -2,4 +2,6 @@
 __pycache__/
 *.ipynb
 extras/DX-Ball brick sounds
+extras/DX-Ball powerup sounds
+extras/8 bit sound effect pack.mp3
 output.txt
