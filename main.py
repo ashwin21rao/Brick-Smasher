@@ -112,7 +112,7 @@ def activatePowerUp(power_up, powerup_sound):
     if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
 
-        # deactivate opposite powerup
+        # remove opposite powerup
         activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if
                                p_up.type != ("SHRINK_PADDLE" if power_up.type == "EXPAND_PADDLE" else "EXPAND_PADDLE")}
 
@@ -122,7 +122,24 @@ def activatePowerUp(power_up, powerup_sound):
                 ball.launch()
 
     elif power_up.type == "THRU_BALL":
+        # deactivate fireball powerup
+        for p_up in activated_power_ups:
+            if p_up.type == "FIRE_BALL":
+                p_up.deactivate(blocks)
+                activated_power_ups.pop(p_up, None)
+                break
+
         power_up.activate(balls, blocks)
+
+    elif power_up.type == "FIRE_BALL":
+        # deactivate thruball powerup
+        for p_up in activated_power_ups:
+            if p_up.type == "THRU_BALL":
+                p_up.deactivate(balls, blocks)
+                activated_power_ups.pop(p_up, None)
+                break
+
+        power_up.activate(blocks)
 
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
         opposite_type = "SLOW_BALL" if power_up.type == "FAST_BALL" else "FAST_BALL"
@@ -160,7 +177,9 @@ def deactivatePowerUps():
         if power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
             game.ball_speed_coefficient = power_up.deactivate()
         elif power_up.type == "THRU_BALL":
-            power_up.deactivate(blocks, balls)
+            power_up.deactivate(balls, blocks)
+        elif power_up.type == "FIRE_BALL":
+            power_up.deactivate(blocks)
         elif power_up.type == "PADDLE_GRAB":
             power_up.deactivate(balls)
 

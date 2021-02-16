@@ -81,11 +81,28 @@ class ThruBall(PowerUp):
         for block in blocks:
             block.killOnCollision()
 
-    def deactivate(self, blocks, balls):
-        for block in blocks:
-            block.kill_on_collision = False
+    def deactivate(self, balls, blocks):
         for ball in balls:
             ball.collidable = True
+        for block in blocks:
+            block.kill_on_collision = False
+
+
+class FireBall(PowerUp):
+    type = "FIRE_BALL"
+
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.render = partial(super().render, powerup_text="FI")
+        self.can_deactivate = True
+
+    def activate(self, blocks):
+        for block in blocks:
+            block.killOnCollision()
+
+    def deactivate(self, blocks):
+        for block in blocks:
+            block.kill_on_collision = False
 
 
 class FastBall(PowerUp):
