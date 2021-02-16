@@ -3,6 +3,7 @@ import sys
 import time
 import random
 import numpy as np
+from datetime import datetime
 from colorama import Fore, Back, Style
 from pygame import mixer
 from game import Game
@@ -12,7 +13,6 @@ from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FastBall, SlowBall, E
 from levels import Levels
 from rawterminal import RawTerminal as rt
 import config
-
 
 # -------------------------------------------------------------------------------------------------------
 # game object
@@ -27,12 +27,14 @@ obstacles = []
 
 # globals
 PowerUpTypes = config.POWER_UP_TYPES.copy()
+activated_power_ups = {}  # power_up -> time of activation
 
 
 def log(str):
     f = open("output.txt", "a")
     f.write(str)
     f.close()
+
 
 # -------------------------------------------------------------------------------------------------------
 def createBlocks(game_width, level):
@@ -61,7 +63,11 @@ def createPowerUp(block, PowerUpType):
     width = 2
     height = 1
 
-    power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height)
+    if PowerUpType.type == "FAST_BALL" or PowerUpType.type == "SLOW_BALL":
+        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height,
+                               initial_ball_speed_coefficient=config.INITIAL_BALL_SPEED_COEFFICIENT)
+    else:
+        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height)
     power_ups.append(power_up)
 
 
@@ -97,20 +103,15 @@ def launchBall(char, ball, paddle):
 def activatePowerUp(power_up):
     game.addPowerUpScore()
 
-    if power_up.type == "EXPAND_PADDLE":
-        power_up.activate(paddle, game.game_window)
-        if ShrinkPaddle.type not in PowerUpTypes:
-            PowerUpTypes[ShrinkPaddle.type] = ShrinkPaddle
+    # update activation time of powerup
+    global activated_power_ups
+    activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if p_up.type != power_up.type}
+    activated_power_ups[power_up] = datetime.now()
 
-        # release grabbed balls if any
-        for ball in balls:
-            if not ball.launched:
-                ball.launch()
-
-    elif power_up.type == "SHRINK_PADDLE":
+    if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
-        if ExpandPaddle.type not in PowerUpTypes:
-            PowerUpTypes[ExpandPaddle.type] = ExpandPaddle
+        activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if
+                               p_up.type != ("SHRINK_PADDLE" if power_up.type == "EXPAND_PADDLE" else "EXPAND_PADDLE")}
 
         # release grabbed balls if any
         for ball in balls:
@@ -121,6 +122,15 @@ def activatePowerUp(power_up):
         power_up.activate(balls, blocks)
 
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
+        opposite_type = "SLOW_BALL" if power_up.type == "FAST_BALL" else "FAST_BALL"
+
+        # deactivate opposite powerup
+        for p_up in activated_power_ups:
+            if p_up.type == opposite_type:
+                game.ball_speed_coefficient = p_up.deactivate()
+                activated_power_ups.pop(p_up, None)
+                break
+
         game.ball_speed_coefficient = power_up.activate(game.ball_speed_coefficient)
 
     elif power_up.type == "EXTRA_LIFE":
@@ -136,6 +146,22 @@ def activatePowerUp(power_up):
 
     elif power_up.type == "PADDLE_GRAB":
         power_up.activate(balls)
+
+
+def deactivatePowerUps():
+    to_deactivate = [power_up for power_up, time in activated_power_ups.items()
+                     if power_up.can_deactivate and
+                     int((datetime.now() - time).total_seconds()) > config.POWERUP_ACTIVATION_TIME]
+
+    for power_up in to_deactivate:
+        if power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
+            game.ball_speed_coefficient = power_up.deactivate()
+        elif power_up.type == "THRU_BALL":
+            power_up.deactivate(blocks, balls)
+        elif power_up.type == "PADDLE_GRAB":
+            power_up.deactivate(balls)
+
+        activated_power_ups.pop(power_up, None)
 
 
 # -------------------------------------------------------------------------------------------------------
@@ -156,7 +182,8 @@ def handleBlockCollision(block, game_window, audio_sounds):
 
     # create power up probabilistically on collision and if score is above threshold
     if game.score > config.POWERUP_SCORE_THRESHOLD:
-        if np.random.choice([0, 1], p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
+        if np.random.choice([0, 1],
+                            p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
             createPowerUp(block, np.random.choice(list(PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
             # createPowerUp(block, random.choice(list(PowerUpTypes.values())))
 
@@ -352,12 +379,14 @@ def gameloop():
     done = False
     while running:
 
+        # show end screen
         if done:
             if not endScreen():
                 break
             started = False
             done = False
 
+        # show start screen
         if not started:
             if not startScreen():
                 break
@@ -395,6 +424,9 @@ def gameloop():
                     renderAndRemove(power_ups, power_up)
                     break
 
+            # deactivate power ups if its time of activation is finished
+            deactivatePowerUps()
+
         # move balls and check collisions
         if move_ball_counter == 0:
             for ball in balls:
@@ -427,7 +459,7 @@ def gameloop():
                 advanceLevel(game.game_window, game.level)  # go to next level
             else:
                 game.won = True
-                done = True # all levels done
+                done = True  # all levels done
 
         # update display based on FPS
         updateDisplay()
