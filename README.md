@@ -12,7 +12,7 @@ A take on the classic brick breaking game, in the terminal!
 ### Controls
 
 - ```WASD``` or ```IJKL``` keys for movement.
-- Move right: ```A/J```, move left: ```D/L```, launch ball: ```W/I```
+- Move left: ```A/J```, move right: ```D/L```, launch ball: ```W/I```
 - ```q``` or ```CTRL+C``` to quit the game.
 
 ### Levels
@@ -21,7 +21,7 @@ A take on the classic brick breaking game, in the terminal!
 
 ### Settings
 
-- Game settings can be changed in [config.py](config.py)
+- Game settings can be changed in [config.py](config.py).
 
 ### Rules
 
