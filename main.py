@@ -309,7 +309,7 @@ def initialSetup():
 
     # play music
     mixer.init()
-    mixer.music.load("extras/background2.wav")
+    mixer.music.load("extras/background.ogg")
     mixer.music.play(loops=-1)
 
     return {"regular_brick_sound": mixer.Sound("extras/brick.wav"),
