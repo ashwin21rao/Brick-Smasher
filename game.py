@@ -26,21 +26,17 @@ class Game:
 
         self.FPS = config.FPS
         self.total_levels = config.TOTAL_LEVELS
-        self.level = Level(self.width, 1)
-        self.lives = config.TOTAL_LIVES
-        self.score = 0
-        self.start_time = None
         self.ticks = None
-        self.won = False
-        self.skip_level = False
+        self.reset()
 
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
         self.powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
+        self.rainbow_brick_color_speed_coefficient = config.RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT
 
         self.createGameBox()
 
     def reset(self):
-        self.level = Level(self.width, 1)
+        self.level = Level(self.width, 3)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None

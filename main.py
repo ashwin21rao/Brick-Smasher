@@ -403,6 +403,9 @@ def gameloop():
     move_ball_counter = 0
     move_powerup_counter = 0
 
+    # to decrease rate of change of color of rainbow bricks
+    change_rainbow_brick_color_counter = 0
+
     running = True
     started = False
     done = False
@@ -443,6 +446,12 @@ def gameloop():
             for ball in balls:
                 if not ball.launched:
                     launchBall(char, ball, paddle)
+
+        # change color of rainbow bricks
+        if change_rainbow_brick_color_counter == 0:
+            for block in blocks:
+                if block.type == "RAINBOW_BLOCK":
+                    block.changeColor()
 
         # activate time attack
         if not game.level.time_attack_activated:
@@ -507,6 +516,7 @@ def gameloop():
         updateDisplay()
         move_ball_counter = (move_ball_counter + 1) % game.ball_speed_coefficient
         move_powerup_counter = (move_powerup_counter + 1) % game.powerup_speed_coefficient
+        change_rainbow_brick_color_counter = (change_rainbow_brick_color_counter + 1) % game.rainbow_brick_color_speed_coefficient
 
 
 gameloop()

@@ -1,4 +1,6 @@
 from sprites import Sprite
+import numpy as np
+import random
 
 
 class Block(Sprite):
@@ -91,3 +93,25 @@ class ExplosiveBlock(Block):
 
     def playSound(self, brick_sounds):
         brick_sounds["explosive_brick_sound"].play()
+
+
+class RainbowBlock(Block):
+    type = "RAINBOW_BLOCK"
+
+    def __init__(self, x_coordinate, y_coordinate, width, height):
+        self.hit = False
+        self.changing_colors = ["green", "yellow", "red", "blue"]
+        random.shuffle(self.changing_colors)
+
+        self.color_index = np.random.randint(0, len(self.changing_colors))
+        super().__init__(x_coordinate, y_coordinate, width, height, self.changing_colors[self.color_index])
+
+    def changeColor(self):
+        if not self.hit:
+            self.color_index = (self.color_index + 1) % len(self.changing_colors)
+            self.color = self.changing_colors[self.color_index]
+            self.strength = Block.colors.index(self.color)
+
+    def handleCollision(self, game_window, blocks):
+        super().handleCollision(game_window, blocks)
+        self.hit = True

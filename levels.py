@@ -1,4 +1,4 @@
-from blocks import Block, ExplosiveBlock
+from blocks import Block, ExplosiveBlock, RainbowBlock
 from datetime import datetime
 
 
@@ -81,7 +81,7 @@ class LevelLayouts:
         max_vertical_blocks = 8
         start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
         start_y = 4
-        colors = ["blue", "red", "yellow", "green"]
+        colors = ["blue", "red", "rainbow", "rainbow"]
 
         for r in range(max_vertical_blocks):
             for c in range(max_horizontal_blocks):
@@ -93,7 +93,10 @@ class LevelLayouts:
                     if r in [i, max_vertical_blocks - i - 1] or c in [i, max_horizontal_blocks - i - 1]:
                         color = colors[i]
                         break
-                block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color)
+                if color == "rainbow":
+                    block = RainbowBlock(start_x + c * (width + 1), start_y + r * (height + 1), width, height)
+                else:
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color)
                 blocks.append(block)
 
         return blocks
@@ -108,7 +111,7 @@ class LevelLayouts:
         max_vertical_blocks = 8
         start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
         start_y = 4
-        colors = [None, "yellow", None, "blue"]
+        colors = [None, "rainbow", None, "blue"]
         invisible_new_colors = ["red", None, "green", None]
 
         for r in range(max_vertical_blocks):
@@ -120,8 +123,11 @@ class LevelLayouts:
                         color = colors[i]
                         invisible_new_color = invisible_new_colors[i]
                         break
-                block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color,
-                              invisible_new_color)
+                if color == "rainbow":
+                    block = RainbowBlock(start_x + c * (width + 1), start_y + r * (height + 1), width, height)
+                else:
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, color,
+                                  invisible_new_color)
                 blocks.append(block)
 
         return blocks
