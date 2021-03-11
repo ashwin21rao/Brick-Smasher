@@ -455,7 +455,8 @@ def gameloop():
 
         # activate time attack
         if not game.level.time_attack_activated:
-            if int((datetime.now() - game.level.start_time).total_seconds()) > config.TIME_BEFORE_TIME_ATTACK:
+            if int((datetime.now() - game.level.start_time).total_seconds()) > \
+                    config.TIME_BEFORE_TIME_ATTACK[game.level.level_num-1]:
                 game.level.activateTimeAttack()
 
         # move power ups
