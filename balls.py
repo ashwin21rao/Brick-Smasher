@@ -43,33 +43,35 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
         return False
 
-    def handleCollision(self, sprite=None, obstacle="block"):
-        if obstacle == "block" and self.collidable:
-            if self.checkVerticalCollision(sprite):
+    def handleBlockCollision(self, block):
+        if self.collidable:
+            if self.checkVerticalCollision(block):
                 self.reflectVertical()
-            elif self.checkHorizontalCollision(sprite):
+            elif self.checkHorizontalCollision(block):
                 self.reflectHorizontal()
-            elif self.checkCornerCollision(sprite) and self.handleCornerCollision(sprite):
-                self.reflectHorizontal()
-
-        elif obstacle == "paddle":
-            if self.checkHorizontalCollision(sprite) or \
-                    (self.checkCornerCollision(sprite) and self.handleCornerCollision(sprite)):
+            elif self.checkCornerCollision(block) and self.handleCornerCollision(block):
                 self.reflectHorizontal()
 
-                mid = sprite.x + sprite.width // 2 - self.width // 2
+    def handlePaddleCollision(self, paddle, paddle_sound=None):
+        if self.checkHorizontalCollision(paddle) or \
+                (self.checkCornerCollision(paddle) and self.handleCornerCollision(paddle)):
+            self.reflectHorizontal()
 
-                for x in range(sprite.x - 2, sprite.x + sprite.width + 1):
-                    if self.x == x:
-                        self.x_speed = (abs(x - mid + (1 if x > mid else -1 if x < mid else 0)) // 2) * \
-                                       (-1 if x < mid else 1)
+            mid = paddle.x + paddle.width // 2 - self.width // 2
 
-                if self.enable_paddle_grab:
-                    self.launched = False
+            for x in range(paddle.x - 2, paddle.x + paddle.width + 1):
+                if self.x == x:
+                    self.x_speed = (abs(x - mid + (1 if x > mid else -1 if x < mid else 0)) // 2) * \
+                                   (-1 if x < mid else 1)
 
-                return True
+            if self.enable_paddle_grab:
+                self.launched = False
+            else:
+                paddle_sound.play()
 
-            return False
+            return True
+
+        return False
 
     def handleWallCollision(self, game_window, wall_sound=None):
         game_height, game_width = game_window.shape

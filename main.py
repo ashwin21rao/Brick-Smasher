@@ -6,7 +6,7 @@ from pygame import mixer
 from game import Game
 from balls import Ball
 from paddle import Paddle
-from levels import Levels
+from levels import Level
 from rawterminal import RawTerminal as rt
 import config
 
@@ -33,10 +33,9 @@ def log(str):
 
 
 # -------------------------------------------------------------------------------------------------------
-def createBlocks(game_width, level):
-    block_arr = getattr(Levels, f"level{level}")(game_width)
-    for block in block_arr:
-        blocks.append(block)
+def createBlocks():
+    global blocks
+    blocks = game.level.getLayout()
 
 
 def createPaddle(game_width, game_height):
@@ -191,8 +190,17 @@ def deactivatePowerUps(reset_all=False):
 # check collision with block, paddle or wall
 def checkCollision(ball, game_window, audio_sounds):
     return checkBlockCollision(ball, game_window, audio_sounds) or \
-           ball.handleCollision(paddle, obstacle="paddle") or \
+           handlePaddleCollision(ball, game_window, audio_sounds) or \
            ball.handleWallCollision(game_window, audio_sounds["wall_sound"])
+
+
+def handlePaddleCollision(ball, game_window, audio_sounds):
+    # collided = ball.handleCollision(paddle, obstacle="paddle")
+    collided = ball.handlePaddleCollision(paddle, audio_sounds["paddle_sound"])
+    if collided and game.level.time_attack_activated:
+        game.level.timeAttack(game_window, blocks, audio_sounds["falling_brick_sound"])
+
+    return collided
 
 
 # WILL BREAK IF BALL SIZE OR DISTANCE BETWEEN BLOCKS IS CHANGED
@@ -233,7 +241,7 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     for block in collided_blocks:
         if not ball.checkCornerCollision(block):
             handleBlockCollision(block, game_window, audio_sounds)
-            ball.handleCollision(block, obstacle="block")
+            ball.handleBlockCollision(block)
             return True
 
     # handle simultaneous vertical collision with corners of 2 blocks
@@ -248,7 +256,7 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     block = collided_blocks[0]
     if ball.handleCornerCollision(block):
         handleBlockCollision(block, game_window, audio_sounds)
-        ball.handleCollision(block, obstacle="block")
+        ball.handleBlockCollision(block)
         return True
 
     return False
@@ -289,7 +297,7 @@ def respawn(game_window):
     createBall(paddle)
 
 
-def advanceLevel(game_window, level):
+def advanceLevel(game_window):
     global balls, blocks
     for block in blocks:
         block.clearOldPosition(game_window)
@@ -300,7 +308,7 @@ def advanceLevel(game_window, level):
     balls = []
 
     respawn(game_window)
-    createBlocks(game.width, level)
+    createBlocks()
 
 
 def initialSetup():
@@ -316,7 +324,9 @@ def initialSetup():
             "indestructible_brick_sound": mixer.Sound("extras/indestructible_brick.wav"),
             "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav"),
             "invisible_brick_sound": mixer.Sound("extras/invisible_brick.wav"),
+            "falling_brick_sound": mixer.Sound("extras/falling_bricks.wav"),
             "activate_powerup_sound": mixer.Sound("extras/powerup.wav"),
+            "paddle_sound": mixer.Sound("extras/paddle_sound.wav"),
             "wall_sound": mixer.Sound("extras/wall_sound.wav"),
             "thru_ball_sound": mixer.Sound("extras/thru_ball.wav")}
 
@@ -329,7 +339,7 @@ def startGame():
     game.startTimer()
 
     # create sprites
-    advanceLevel(game.game_window, 1)
+    advanceLevel(game.game_window)
 
     # render screen
     game.printScreen()
@@ -423,6 +433,9 @@ def gameloop():
                 rt.resetKeyboardDelay()
                 running = False
 
+            elif char == 32:
+                game.skip_level = True
+
             # move paddle based on keypress
             movePaddle(char, game.game_window, balls, paddle)
 
@@ -430,6 +443,11 @@ def gameloop():
             for ball in balls:
                 if not ball.launched:
                     launchBall(char, ball, paddle)
+
+        # activate time attack
+        if not game.level.time_attack_activated:
+            if int((datetime.now() - game.level.start_time).total_seconds()) > config.TIME_BEFORE_TIME_ATTACK:
+                game.level.activateTimeAttack()
 
         # move power ups
         if move_powerup_counter == 0:
@@ -471,11 +489,16 @@ def gameloop():
                 respawn(game.game_window)
                 time.sleep(0.5)
 
+        # if blocks reached paddle (time attack)
+        for block in blocks:
+            if block.y + block.height == paddle.y:
+                done = True
+
         # check if level is complete
-        elif game.levelComplete(blocks) or game.skip_level:
-            if game.level + 1 <= game.total_levels:
+        if game.levelComplete(blocks) or game.skip_level:
+            if game.level.level_num + 1 <= game.total_levels:
                 game.incrementLevel()
-                advanceLevel(game.game_window, game.level)  # go to next level
+                advanceLevel(game.game_window)  # go to next level
             else:
                 game.won = True
                 done = True  # all levels done

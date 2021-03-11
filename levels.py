@@ -1,7 +1,31 @@
 from blocks import Block, ExplosiveBlock
+from datetime import datetime
 
 
-class Levels:
+class Level:
+    def __init__(self, game_width, level_num):
+        self.start_time = datetime.now()
+        self.level_num = level_num
+        self.layout = getattr(LevelLayouts, f"level{level_num}")(game_width)
+        self.time_attack_activated = False
+
+    def getLayout(self):
+        return self.layout
+
+    def getStartTime(self):
+        return self.start_time
+
+    def activateTimeAttack(self):
+        self.time_attack_activated = True
+
+    def timeAttack(self, game_window, blocks, falling_brick_sound):
+        for block in blocks:
+            block.moveDown(game_window)
+
+        falling_brick_sound.play()
+
+
+class LevelLayouts:
     @staticmethod
     def level1(game_width):
         blocks = []

@@ -3,6 +3,7 @@ import numpy as np
 from datetime import datetime, timedelta
 from colorama import Fore, Back, Style
 import config
+from levels import Level
 
 
 class Game:
@@ -25,7 +26,7 @@ class Game:
 
         self.FPS = config.FPS
         self.total_levels = config.TOTAL_LEVELS
-        self.level = 1
+        self.level = Level(self.width, 1)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
@@ -39,7 +40,7 @@ class Game:
         self.createGameBox()
 
     def reset(self):
-        self.level = 1
+        self.level = Level(self.width, 1)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
@@ -103,7 +104,7 @@ class Game:
                     self.columns - self.right_margin + 1] = list(score_text)
 
         # level
-        level_text = f"Level: {self.level}"
+        level_text = f"Level: {self.level.level_num}"
         self.screen[self.rows - self.bottom_margin + 1,
                     self.left_margin - 1:
                     self.left_margin - 1 + len(level_text)] = list(level_text)
@@ -246,7 +247,7 @@ class Game:
         self.lives -= 1
 
     def incrementLevel(self):
-        self.level += 1
+        self.level = Level(self.width, self.level.level_num + 1)
 
     def levelComplete(self, blocks):
         for block in blocks:

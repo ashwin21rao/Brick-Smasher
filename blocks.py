@@ -12,6 +12,10 @@ class Block(Sprite):
         self.kill_on_collision = False
         self.invisible_new_color = invisible_new_color
 
+    def moveDown(self, game_window):
+        self.clearOldPosition(game_window)
+        self.y += 1
+
     def getStrength(self):
         return self.strength
 
