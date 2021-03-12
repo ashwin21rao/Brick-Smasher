@@ -1,6 +1,7 @@
 from sprites import Sprite
 import numpy as np
 import random
+from colorama import Back
 
 
 class Block(Sprite):
@@ -13,6 +14,14 @@ class Block(Sprite):
         self.original_color = color
         self.kill_on_collision = False
         self.invisible_new_color = invisible_new_color
+        self.initArray()
+
+    def initArray(self):
+        self.array = np.array([[" " for _ in range(self.width)] for _ in range(self.height)], dtype=object)
+
+        if self.color is not None:
+            self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+            self.array[:, self.width - 1] = " " + Back.RESET
 
     def moveDown(self, game_window):
         self.clearOldPosition(game_window)
@@ -32,13 +41,13 @@ class Block(Sprite):
 
         # invisible brick changes to specified color
         if self.color is None:
-            self.color = self.invisible_new_color
+            self.setColor(self.invisible_new_color)
             self.strength = Block.colors.index(self.invisible_new_color)
         else:
             self.strength -= 1
 
         if self.strength > -1:
-            self.color = Block.colors[self.strength]
+            self.setColor(Block.colors[self.strength])
         else:
             self.clearOldPosition(game_window)
 
@@ -109,7 +118,7 @@ class RainbowBlock(Block):
     def changeColor(self):
         if not self.hit:
             self.color_index = (self.color_index + 1) % len(self.changing_colors)
-            self.color = self.changing_colors[self.color_index]
+            self.setColor(self.changing_colors[self.color_index])
             self.strength = Block.colors.index(self.color)
 
     def handleCollision(self, game_window, blocks):

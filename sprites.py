@@ -9,27 +9,36 @@ class Sprite:
         self.width = width
         self.height = height
         self.color = color
+        self.array = None
 
     def render(self, game_window):
-        game_width = game_window.shape[1]
+        game_window[self.y: self.y + self.height, self.x: self.x + self.width] = self.array
 
-        if self.color is not None:
-            if self.x < game_width:
-                game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
-            if self.x + self.width < game_width:
-                game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + " "
+        # game_width = game_window.shape[1]
+
+        # if self.color is not None:
+        #     if self.x < game_width:
+        #         game_window[self.y: self.y + self.height, self.x] = Back.__getattribute__(self.color.upper()) + " "
+        #     if self.x + self.width < game_width:
+        #         game_window[self.y: self.y + self.height, self.x + self.width] = Back.RESET + " "
 
     def clearOldPosition(self, game_window):
-        game_width = game_window.shape[1]
+        game_window[self.y: self.y + self.height, self.x: self.x + self.width] = " "
 
-        if self.x < game_width:
-            game_window[self.y: self.y + self.height, self.x] = " "
-        if self.x + self.width < game_width:
-            game_window[self.y: self.y + self.height, self.x + self.width] = " "
+        # game_width = game_window.shape[1]
+
+        # if self.x < game_width:
+        #     game_window[self.y: self.y + self.height, self.x] = " "
+        # if self.x + self.width < game_width:
+        #     game_window[self.y: self.y + self.height, self.x + self.width] = " "
 
     def setNewPosition(self, x, y):
         self.x = x
         self.y = y
+
+    def setColor(self, color):
+        self.color = color
+        self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
 
 
 # generic sprite movable with arrow keys (left and right)

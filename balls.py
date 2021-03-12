@@ -1,4 +1,6 @@
 from sprites import MovableSprite, SpriteCollisionMixin
+import numpy as np
+from colorama import Back
 
 
 class Ball(MovableSprite, SpriteCollisionMixin):
@@ -9,6 +11,14 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         self.collidable = True
         self.launched = launched
         self.enable_paddle_grab = enable_paddle_grab
+        self.initArray()
+
+    def initArray(self):
+        self.array = np.array([[" " for _ in range(self.width)] for _ in range(self.height)], dtype=object)
+
+        if self.color is not None:
+            self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+            self.array[:, self.width - 1] = " " + Back.RESET
 
     def reflectHorizontal(self):
         self.y_speed *= -1

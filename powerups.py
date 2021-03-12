@@ -1,7 +1,6 @@
-import copy
 from sprites import Sprite, SpriteCollisionMixin
+import copy
 from colorama import Back
-from functools import partial
 
 
 class PowerUp(Sprite, SpriteCollisionMixin):
@@ -9,23 +8,12 @@ class PowerUp(Sprite, SpriteCollisionMixin):
         super().__init__(x_coordinate, y_coordinate, width, height, color)
         self.y_speed = y_speed
 
-    def render(self, game_window, powerup_text=None):
-        game_width = game_window.shape[1]
-
-        game_window[self.y, self.x: self.x + self.width] = list(powerup_text)
+    def initArray(self, powerup_text):
+        self.array = list(powerup_text)
 
         if self.color is not None:
-            if self.x < game_width:
-                game_window[self.y: self.y + self.height, self.x] = \
-                    Back.__getattribute__(self.color.upper()) + game_window[self.y: self.y + self.height, self.x]
-            if self.x + self.width < game_width:
-                game_window[self.y: self.y + self.height, self.x + self.width] = \
-                    Back.RESET + game_window[self.y: self.y + self.height, self.x + self.width]
-
-    def clearOldPosition(self, game_window):
-        game_window[self.y, self.x: self.x + self.width] = " "
-        if self.color is not None:
-            super().clearOldPosition(game_window)
+            self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+            self.array[:, self.width-1] = self.array[:, self.width-1] + Back.RESET
 
     def move(self, game_window):
         # clear old position
@@ -49,7 +37,8 @@ class ExpandPaddle(PowerUp):
 
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.render = partial(super().render, powerup_text="EP")
+        # self.render = partial(super().render, powerup_text="EP")
+        self.initArray("EP")
         self.can_deactivate = False
 
     def activate(self, paddle, game_window):
@@ -61,7 +50,8 @@ class ShrinkPaddle(PowerUp):
 
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.render = partial(super().render, powerup_text="SP")
+        # self.render = partial(super().render, powerup_text="SP")
+        self.initArray("SP")
         self.can_deactivate = False
 
     def activate(self, paddle, game_window):
@@ -73,7 +63,8 @@ class ThruBall(PowerUp):
 
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.render = partial(super().render, powerup_text="TB")
+        # self.render = partial(super().render, powerup_text="TB")
+        self.initArray("TB")
         self.can_deactivate = True
 
     def activate(self, balls, blocks):
@@ -94,7 +85,8 @@ class FireBall(PowerUp):
 
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
-        self.render = partial(super().render, powerup_text="FI")
+        # self.render = partial(super().render, powerup_text="FI")
+        self.initArray("FI")
         self.can_deactivate = True
 
     def activate(self, blocks):
@@ -113,7 +105,8 @@ class FastBall(PowerUp):
                  initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
-        self.render = partial(super().render, powerup_text="FB")
+        # self.render = partial(super().render, powerup_text="FB")
+        self.initArray("FB")
         self.can_deactivate = True
         self.initial_ball_speed_coefficient = initial_ball_speed_coefficient
 
@@ -132,7 +125,8 @@ class SlowBall(PowerUp):
                  initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
-        self.render = partial(super().render, powerup_text="SB")
+        # self.render = partial(super().render, powerup_text="SB")
+        self.initArray("SB")
         self.can_deactivate = True
         self.initial_ball_speed_coefficient = initial_ball_speed_coefficient
 
@@ -149,7 +143,8 @@ class ExtraLife(PowerUp):
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
-        self.render = partial(super().render, powerup_text="XL")
+        # self.render = partial(super().render, powerup_text="XL")
+        self.initArray("XL")
         self.can_deactivate = False
 
     def activate(self, game):
@@ -162,7 +157,8 @@ class MultiplyBalls(PowerUp):
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
-        self.render = partial(super().render, powerup_text="MB")
+        # self.render = partial(super().render, powerup_text="MB")
+        self.initArray("MB")
         self.can_deactivate = False
 
     def activate(self, balls, game_window):
@@ -186,7 +182,8 @@ class PaddleGrab(PowerUp):
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
-        self.render = partial(super().render, powerup_text="PG")
+        # self.render = partial(super().render, powerup_text="PG")
+        self.initArray("PG")
         self.can_deactivate = True
 
     def activate(self, balls):
@@ -206,7 +203,8 @@ class SkipLevel(PowerUp):
     def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
-        self.render = partial(super().render, powerup_text="SK")
+        # self.render = partial(super().render, powerup_text="SK")
+        self.initArray("SK")
         self.can_deactivate = True
 
     def activate(self, game):
