@@ -44,6 +44,7 @@ def createPaddle(game_width, game_height):
 
     global paddle
     paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white")
+    paddle.activateLasers(game.game_window)
 
 
 def createBall(paddle):

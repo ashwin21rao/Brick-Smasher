@@ -31,22 +31,22 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
     def handleCornerCollision(self, sprite):
         # top left corner
-        if self.x + self.width == sprite.x and self.y + self.height == sprite.y and \
+        if self.hitbox.x + self.hitbox.width == sprite.hitbox.x and self.hitbox.y + self.hitbox.height == sprite.hitbox.y and \
                 (self.x_speed > 0 and self.y_speed > 0):
             return True
 
         # bottom left corner
-        if self.x + self.width == sprite.x and self.y == sprite.y + sprite.height and \
+        if self.hitbox.x + self.hitbox.width == sprite.hitbox.x and self.hitbox.y == sprite.hitbox.y + sprite.hitbox.height and \
                 (self.x_speed > 0 and self.y_speed < 0):
             return True
 
         # top right corner
-        if self.x == sprite.x + sprite.width and self.y + self.height == sprite.y and \
+        if self.hitbox.x == sprite.hitbox.x + sprite.hitbox.width and self.hitbox.y + self.hitbox.height == sprite.hitbox.y and \
                 (self.x_speed < 0 and self.y_speed > 0):
             return True
 
         # bottom right corner
-        if self.x == sprite.x + sprite.width and self.y == sprite.y + sprite.height and \
+        if self.hitbox.x == sprite.hitbox.x + sprite.hitbox.width and self.hitbox.y == sprite.hitbox.y + sprite.hitbox.height and \
                 (self.x_speed < 0 and self.y_speed < 0):
             return True
 
@@ -87,14 +87,14 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         collided = False
 
         # bounce off side walls
-        if self.x + self.width >= game_width or self.x <= 0:
-            self.x = 0 if self.x <= 0 else game_width - self.width
+        if self.hitbox.x + self.hitbox.width >= game_width or self.hitbox.x <= 0:
+            self.updatePosition(x=(0 if self.x <= 0 else game_width - self.width))
             self.reflectVertical()
             collided = True
 
         # bounce off top wall
-        if self.y <= 0 or self.y + self.height >= game_height:
-            self.y = 0 if self.y <= 0 else game_height - self.height
+        if self.hitbox.y <= 0 or self.hitbox.y + self.hitbox.height >= game_height:
+            self.updatePosition(y=(0 if self.y <= 0 else game_height - self.height))
             self.reflectHorizontal()
             collided = True
 

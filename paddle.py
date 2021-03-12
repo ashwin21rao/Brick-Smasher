@@ -15,39 +15,41 @@ class Paddle(MovableSprite):
         self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
         self.array[:, self.width - 1] = " " + Back.RESET
 
-    def expand(self, game_window):
+    def moveLeft(self, game_window, speed=None):
+        super().moveLeft(game_window, speed)
+        if self.lasers_activated:
+            self.updateHitbox(x=(self.x + 1), width=self.width_without_lasers)
+
+    def moveRight(self, game_window, speed=None):
+        super().moveRight(game_window, speed)
+        if self.lasers_activated:
+            self.updateHitbox(x=(self.x + 1), width=self.width_without_lasers)
+
+    def changeWidth(self, game_window, new_width):
         game_width = game_window.shape[1]
 
         self.clearOldPosition(game_window)
 
         mid = self.x + self.width // 2
-        self.width = 16
-        self.x = mid - self.width // 2
+        self.width = new_width
+        self.width_without_lasers = self.width
+        self.updatePosition(x=(mid - self.width // 2))
 
         if self.x + self.width > game_width:
-            self.x = game_width - self.width
+            self.updatePosition(x=(game_width - self.width))
         elif self.x < 0:
-            self.x = 0
+            self.updatePosition(x=0)
 
         self.initArray()
-        self.initHitBox()
+
+        if self.lasers_activated:
+            self.activateLasers(game_window)
+
+    def expand(self, game_window):
+        self.changeWidth(game_window, 16)
 
     def shrink(self, game_window):
-        game_width = game_window.shape[1]
-
-        self.clearOldPosition(game_window)
-
-        mid = self.x + self.width // 2
-        self.width = 6
-        self.x = mid - self.width // 2
-
-        if self.x + self.width > game_width:
-            self.x = game_width - self.width
-        elif self.x < 0:
-            self.x = 0
-
-        self.initArray()
-        self.initHitBox()
+        self.changeWidth(game_window, 6)
 
     def activateLasers(self, game_window):
         self.lasers_activated = True
