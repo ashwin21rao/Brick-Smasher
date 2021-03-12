@@ -33,6 +33,7 @@ class Paddle(MovableSprite):
         mid = self.x + self.width // 2
         self.width = new_width
         self.width_without_lasers = self.width
+        self.updateHitbox(width=self.width)
         self.updatePosition(x=(mid - self.width // 2))
 
         if self.x + self.width > game_width:
