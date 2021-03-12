@@ -215,7 +215,8 @@ def checkCollision(ball, game_window, audio_sounds):
 
 
 def checkPaddleCollision(ball, game_window, audio_sounds):
-    collided = ball.handlePaddleCollision(paddle, audio_sounds["paddle_sound"])
+    collided = ball.handlePaddleCollision(paddle, {"paddle_bounce_sound": audio_sounds["paddle_sound"],
+                                                   "paddle_grab_sound": audio_sounds["paddle_grab_sound"]})
     if collided and game.level.time_attack_activated:
         game.level.timeAttack(game_window, blocks, audio_sounds["falling_brick_sound"])
 
@@ -364,7 +365,8 @@ def initialSetup():
             "paddle_sound": mixer.Sound(config.PADDLE_SOUND),
             "wall_sound": mixer.Sound(config.WALL_SOUND),
             "thru_ball_sound": mixer.Sound(config.THRU_BALL_SOUND),
-            "laser_sound": mixer.Sound(config.LASER_SOUND)}
+            "laser_sound": mixer.Sound(config.LASER_SOUND),
+            "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND)}
 
 
 def startGame():

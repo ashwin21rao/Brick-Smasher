@@ -61,7 +61,7 @@ class Ball(MovableSprite, SpriteCollisionMixin):
             elif self.checkCornerCollision(block) and self.handleCornerCollision(block):
                 self.reflectHorizontal()
 
-    def handlePaddleCollision(self, paddle, paddle_sound=None):
+    def handlePaddleCollision(self, paddle, paddle_sounds):
         if self.checkHorizontalCollision(paddle) or \
                 (self.checkCornerCollision(paddle) and self.handleCornerCollision(paddle)):
             self.reflectHorizontal()
@@ -75,8 +75,9 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
             if self.enable_paddle_grab:
                 self.launched = False
+                paddle_sounds["paddle_grab_sound"].play()
             else:
-                paddle_sound.play()
+                paddle_sounds["paddle_bounce_sound"].play()
 
             return True
 

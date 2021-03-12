@@ -39,7 +39,7 @@ class Game:
         self.createGameBox()
 
     def reset(self):
-        self.level = Level(self.width, 5)
+        self.level = Level(self.width, 1)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None

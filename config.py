@@ -16,6 +16,7 @@ PADDLE_SOUND = "extras/paddle_sound.wav"
 WALL_SOUND = "extras/wall_sound.wav"
 THRU_BALL_SOUND = "extras/thru_ball.wav"
 LASER_SOUND = "extras/laser_sound.wav"
+PADDLE_GRAB_SOUND = "extras/paddle_grab_sound.wav"
 
 
 # power up types
