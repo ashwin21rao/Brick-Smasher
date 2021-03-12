@@ -13,7 +13,7 @@ class Block(Sprite):
         self.strength = Block.colors.index(color)
         self.original_color = self.color
         self.kill_on_collision = False
-        self.explode_on_collision = False if type == "REGULAR_BLOCK" else True
+        self.explode_on_collision = False if type != "EXPLOSIVE_BLOCK" else True
         self.invisible_new_color = invisible_new_color
         self.initArray()
 
@@ -105,15 +105,14 @@ class Block(Sprite):
 
 
 class RainbowBlock(Block):
-    type = "RAINBOW_BLOCK"
-
     def __init__(self, x_coordinate, y_coordinate, width, height):
         self.hit = False
         self.changing_colors = ["green", "yellow", "red", "blue"]
         random.shuffle(self.changing_colors)
 
         self.color_index = np.random.randint(0, len(self.changing_colors))
-        super().__init__(x_coordinate, y_coordinate, width, height, self.changing_colors[self.color_index])
+        super().__init__(x_coordinate, y_coordinate, width, height, self.changing_colors[self.color_index],
+                         type="RAINBOW_BLOCK")
 
     def changeColor(self):
         if not self.hit:
