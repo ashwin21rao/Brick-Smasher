@@ -203,8 +203,8 @@ class Game:
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
-        return (sprite1.x + sprite1.width >= sprite2.x and sprite1.x <= sprite2.x + sprite2.width) and \
-               (sprite1.y + sprite1.height >= sprite2.y and sprite1.y <= sprite2.y + sprite2.height)
+        return (sprite1.hitbox.x + sprite1.hitbox.width >= sprite2.hitbox.x and sprite1.hitbox.x <= sprite2.hitbox.x + sprite2.hitbox.width) and \
+               (sprite1.hitbox.y + sprite1.hitbox.height >= sprite2.hitbox.y and sprite1.hitbox.y <= sprite2.hitbox.y + sprite2.hitbox.height)
 
     # check collision between a sprite and a sprite group and return all collided sprites
     def spriteCollide(self, sprite, sprite_group):

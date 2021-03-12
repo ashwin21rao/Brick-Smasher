@@ -20,7 +20,7 @@ class PowerUp(Sprite, SpriteCollisionMixin):
         self.clearOldPosition(game_window)
 
         # move power up
-        self.y += self.y_speed
+        self.updatePosition(y=(self.y + self.y_speed))
 
     def ready(self, paddle):
         return self.checkHorizontalCollision(paddle)

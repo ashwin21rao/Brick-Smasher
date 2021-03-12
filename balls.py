@@ -16,9 +16,8 @@ class Ball(MovableSprite, SpriteCollisionMixin):
     def initArray(self):
         self.array = np.array([[" " for _ in range(self.width)] for _ in range(self.height)], dtype=object)
 
-        if self.color is not None:
-            self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
-            self.array[:, self.width - 1] = " " + Back.RESET
+        self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+        self.array[:, self.width - 1] = " " + Back.RESET
 
     def reflectHorizontal(self):
         self.y_speed *= -1
@@ -110,9 +109,9 @@ class Ball(MovableSprite, SpriteCollisionMixin):
 
         # move ball
         if self.x_speed != 0:
-            self.x += self.x_speed // abs(self.x_speed)
+            self.updatePosition(x=(self.x + self.x_speed // abs(self.x_speed)))
         if move_y:
-            self.y += self.y_speed
+            self.updatePosition(y=(self.y + self.y_speed))
 
     def launch(self):
         self.launched = True

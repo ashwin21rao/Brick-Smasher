@@ -25,7 +25,7 @@ class Block(Sprite):
 
     def moveDown(self, game_window):
         self.clearOldPosition(game_window)
-        self.y += 1
+        self.updatePosition(y=(self.y + 1))
 
     def getStrength(self):
         return self.strength

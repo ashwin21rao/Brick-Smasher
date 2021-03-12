@@ -10,6 +10,10 @@ class Sprite:
         self.height = height
         self.color = color
         self.array = None
+        self.initHitBox()
+
+    def initHitBox(self):
+        self.hitbox = Hitbox(self.x, self.y, self.width, self.height)
 
     def render(self, game_window):
         game_window[self.y: self.y + self.height, self.x: self.x + self.width] = self.array
@@ -32,13 +36,36 @@ class Sprite:
         # if self.x + self.width < game_width:
         #     game_window[self.y: self.y + self.height, self.x + self.width] = " "
 
-    def setNewPosition(self, x, y):
-        self.x = x
-        self.y = y
+    def updatePosition(self, x=None, y=None, update_hitbox=True):
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
+        if update_hitbox:
+            self.updateHitbox(x, y)
+
+    def updateHitbox(self, x=None, y=None, width=None, height=None):
+        if x is not None:
+            self.hitbox.x = x
+        if y is not None:
+            self.hitbox.y = y
+        if width is not None:
+            self.hitbox.width = width
+        if height is not None:
+            self.hitbox.height = height
 
     def setColor(self, color):
         self.color = color
         self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+
+
+# hitbox for sprite
+class Hitbox():
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
 
 
 # generic sprite movable with arrow keys (left and right)
@@ -52,7 +79,8 @@ class MovableSprite(Sprite):
 
         if speed is None:
             speed = abs(self.x_speed)
-        self.x = self.x - speed if self.x - speed > -1 else 0  # move left
+
+        self.updatePosition(x=(self.x - speed if self.x - speed > -1 else 0))
 
     def moveRight(self, game_window, speed=None):
         self.clearOldPosition(game_window)
@@ -61,8 +89,7 @@ class MovableSprite(Sprite):
         if speed is None:
             speed = abs(self.x_speed)
 
-        self.x = self.x + speed if self.x + self.width + speed <= game_width \
-            else game_width - self.width  # move right
+        self.updatePosition(x=(self.x + speed if self.x + self.width + speed <= game_width else game_width - self.width))
 
     def setSpeed(self, x_speed):
         self.x_speed = x_speed
@@ -71,12 +98,12 @@ class MovableSprite(Sprite):
 # generic sprite with collision checking helper functions
 class SpriteCollisionMixin:
     def checkHorizontalCollision(self, sprite):
-        return (self.y + self.height == sprite.y and self.y_speed > 0 or self.y == sprite.y + sprite.height and self.y_speed < 0) and \
-               (self.x + self.width - 1 >= sprite.x and self.x <= sprite.x + sprite.width - 1)
+        return (self.hitbox.y + self.hitbox.height == sprite.hitbox.y and self.y_speed > 0 or self.hitbox.y == sprite.hitbox.y + sprite.hitbox.height and self.y_speed < 0) and \
+               (self.hitbox.x + self.hitbox.width - 1 >= sprite.hitbox.x and self.hitbox.x <= sprite.hitbox.x + sprite.hitbox.width - 1)
 
     def checkVerticalCollision(self, sprite):
-        return (self.x + self.width == sprite.x and self.x_speed > 0 or self.x == sprite.x + sprite.width and self.x_speed < 0) and \
-               (self.y + self.height - 1 >= sprite.y and self.y <= sprite.y + sprite.height - 1)
+        return (self.hitbox.x + self.hitbox.width == sprite.hitbox.x and self.x_speed > 0 or self.hitbox.x == sprite.hitbox.x + sprite.hitbox.width and self.x_speed < 0) and \
+               (self.hitbox.y + self.hitbox.height - 1 >= sprite.hitbox.y and self.hitbox.y <= sprite.hitbox.y + sprite.hitbox.height - 1)
 
     def checkCornerCollision(self, sprite):
         return not self.checkHorizontalCollision(sprite) and not self.checkVerticalCollision(sprite)
