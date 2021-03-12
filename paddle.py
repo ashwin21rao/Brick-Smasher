@@ -52,6 +52,9 @@ class Paddle(MovableSprite):
         self.changeWidth(game_window, 6)
 
     def activateLasers(self, game_window):
+        if self.lasers_activated:
+            return
+
         self.lasers_activated = True
 
         laser_array = (np.array([[Fore.RED + "\u2503" + Fore.RESET] for _ in range(self.height)], dtype=object))
@@ -72,10 +75,11 @@ class Paddle(MovableSprite):
         # change hitbox
         self.updateHitbox(x=(self.x + 1), width=self.width_without_lasers)
 
-    def deactivateLasers(self):
+    def deactivateLasers(self, game_window):
         self.lasers_activated = False
 
         # reset width and position
+        self.clearOldPosition(game_window)
         self.width = self.width_without_lasers
         self.updatePosition(x=(self.x + 1))
 

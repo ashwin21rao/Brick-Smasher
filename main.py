@@ -5,8 +5,8 @@ from datetime import datetime
 from pygame import mixer
 from game import Game
 from balls import Ball
+from lasers import Laser
 from paddle import Paddle
-from levels import Level
 from rawterminal import RawTerminal as rt
 import config
 
@@ -19,11 +19,11 @@ paddle = None
 blocks = []
 balls = []
 power_ups = []
-obstacles = []
+lasers = []
 
 # globals
 PowerUpTypes = config.POWER_UP_TYPES.copy()
-activated_power_ups = {}  # power_up -> time of activation
+# activated_power_ups = {}  # power_up -> time of activation
 
 
 def log(str):
@@ -44,7 +44,6 @@ def createPaddle(game_width, game_height):
 
     global paddle
     paddle = Paddle(game_width // 2 - width // 2, game_height - height - 1, width, height, "white")
-    paddle.activateLasers(game.game_window)
 
 
 def createBall(paddle):
@@ -56,14 +55,11 @@ def createBall(paddle):
 
 
 def createPowerUp(block, PowerUpType):
-    width = 2
-    height = 1
-
     if PowerUpType.type == "FAST_BALL" or PowerUpType.type == "SLOW_BALL":
-        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height,
+        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2,
                                initial_ball_speed_coefficient=config.INITIAL_BALL_SPEED_COEFFICIENT)
     else:
-        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2, width, height)
+        power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2)
     power_ups.append(power_up)
 
 
@@ -101,15 +97,15 @@ def activatePowerUp(power_up, powerup_sound):
     power_up.playSound(powerup_sound)
 
     # update activation time of powerup
-    global activated_power_ups
-    activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if p_up.type != power_up.type}
-    activated_power_ups[power_up] = datetime.now()
+    # global activated_power_ups
+    game.activated_power_ups = {p_up: time for p_up, time in game.activated_power_ups.items() if p_up.type != power_up.type}
+    game.activated_power_ups[power_up] = datetime.now()
 
     if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
         power_up.activate(paddle, game.game_window)
 
         # remove opposite powerup
-        activated_power_ups = {p_up: time for p_up, time in activated_power_ups.items() if
+        game.activated_power_ups = {p_up: time for p_up, time in game.activated_power_ups.items() if
                                p_up.type != ("SHRINK_PADDLE" if power_up.type == "EXPAND_PADDLE" else "EXPAND_PADDLE")}
 
         # release grabbed balls if any
@@ -119,20 +115,20 @@ def activatePowerUp(power_up, powerup_sound):
 
     elif power_up.type == "THRU_BALL":
         # deactivate fireball powerup
-        for p_up in activated_power_ups:
+        for p_up in game.activated_power_ups:
             if p_up.type == "FIRE_BALL":
                 p_up.deactivate(blocks)
-                activated_power_ups.pop(p_up, None)
+                game.activated_power_ups.pop(p_up, None)
                 break
 
         power_up.activate(balls, blocks)
 
     elif power_up.type == "FIRE_BALL":
         # deactivate thruball powerup
-        for p_up in activated_power_ups:
+        for p_up in game.activated_power_ups:
             if p_up.type == "THRU_BALL":
                 p_up.deactivate(balls, blocks)
-                activated_power_ups.pop(p_up, None)
+                game.activated_power_ups.pop(p_up, None)
                 break
 
         power_up.activate(blocks)
@@ -141,10 +137,10 @@ def activatePowerUp(power_up, powerup_sound):
         opposite_type = "SLOW_BALL" if power_up.type == "FAST_BALL" else "FAST_BALL"
 
         # deactivate opposite powerup
-        for p_up in activated_power_ups:
+        for p_up in game.activated_power_ups:
             if p_up.type == opposite_type:
                 p_up.deactivate(game)
-                activated_power_ups.pop(p_up, None)
+                game.activated_power_ups.pop(p_up, None)
                 break
 
         power_up.activate(game)
@@ -166,9 +162,13 @@ def activatePowerUp(power_up, powerup_sound):
     elif power_up.type == "SKIP_LEVEL":
         power_up.activate(game)
 
+    elif power_up.type == "SHOOT_LASER":
+        power_up.activate(paddle, game.game_window)
+        # lasers.extend(power_up.shootLasers(paddle))
+
 
 def deactivatePowerUps(reset_all=False):
-    to_deactivate = [power_up for power_up, time in activated_power_ups.items()
+    to_deactivate = [power_up for power_up, time in game.activated_power_ups.items()
                      if power_up.can_deactivate and
                      (reset_all or int((datetime.now() - time).total_seconds()) > config.POWERUP_ACTIVATION_TIME)]
 
@@ -183,20 +183,21 @@ def deactivatePowerUps(reset_all=False):
             power_up.deactivate(balls)
         elif power_up.type == "SKIP_LEVEL":
             power_up.deactivate(game)
+        elif power_up.type == "SHOOT_LASER":
+            power_up.deactivate(paddle, game.game_window)
 
-        activated_power_ups.pop(power_up, None)
+        game.activated_power_ups.pop(power_up, None)
 
 
 # -------------------------------------------------------------------------------------------------------
 # check collision with block, paddle or wall
 def checkCollision(ball, game_window, audio_sounds):
     return checkBlockCollision(ball, game_window, audio_sounds) or \
-           handlePaddleCollision(ball, game_window, audio_sounds) or \
+           checkPaddleCollision(ball, game_window, audio_sounds) or \
            ball.handleWallCollision(game_window, audio_sounds["wall_sound"])
 
 
-def handlePaddleCollision(ball, game_window, audio_sounds):
-    # collided = ball.handleCollision(paddle, obstacle="paddle")
+def checkPaddleCollision(ball, game_window, audio_sounds):
     collided = ball.handlePaddleCollision(paddle, audio_sounds["paddle_sound"])
     if collided and game.level.time_attack_activated:
         game.level.timeAttack(game_window, blocks, audio_sounds["falling_brick_sound"])
@@ -263,10 +264,21 @@ def checkBlockCollision(ball, game_window, audio_sounds):
     return False
 
 
+def checkLaserHit(laser, audio_sounds):
+    hit = False
+
+    for block in blocks:
+        if laser.hitBlock(block):
+            handleBlockCollision(block, game.game_window, audio_sounds)
+            hit = True
+
+    return hit
+
+
 # -------------------------------------------------------------------------------------------------------
 def updateDisplay():
     # update display
-    sprites = blocks + power_ups + [paddle] + balls
+    sprites = blocks + lasers + power_ups + [paddle] + balls
     game.updateScreen(sprites)
 
     # print screen
@@ -284,13 +296,18 @@ def renderAndRemove(sprite_list, sprite):
 
 
 def respawn(game_window):
-    global power_ups, activated_power_ups
+    global power_ups, lasers
+    # global activated_power_ups
     deactivatePowerUps(reset_all=True)
     for power_up in power_ups:
         power_up.clearOldPosition(game_window)
 
     power_ups = []
-    activated_power_ups = {}
+    game.activated_power_ups = {}
+
+    for laser in lasers:
+        laser.clearOldPosition(game_window)
+    lasers = []
 
     if paddle is not None:
         paddle.clearOldPosition(game_window)
@@ -299,7 +316,7 @@ def respawn(game_window):
 
 
 def advanceLevel(game_window):
-    global balls, blocks
+    global balls, blocks, lasers
     for block in blocks:
         block.clearOldPosition(game_window)
     for ball in balls:
@@ -318,18 +335,19 @@ def initialSetup():
 
     # play music
     mixer.init()
-    mixer.music.load("extras/background.ogg")
+    mixer.music.load(config.BACKGROUND_MUSIC)
     mixer.music.play(loops=-1)
 
-    return {"regular_brick_sound": mixer.Sound("extras/brick.wav"),
-            "indestructible_brick_sound": mixer.Sound("extras/indestructible_brick.wav"),
-            "explosive_brick_sound": mixer.Sound("extras/explosive_brick.wav"),
-            "invisible_brick_sound": mixer.Sound("extras/invisible_brick.wav"),
-            "falling_brick_sound": mixer.Sound("extras/falling_bricks.wav"),
-            "activate_powerup_sound": mixer.Sound("extras/powerup.wav"),
-            "paddle_sound": mixer.Sound("extras/paddle_sound.wav"),
-            "wall_sound": mixer.Sound("extras/wall_sound.wav"),
-            "thru_ball_sound": mixer.Sound("extras/thru_ball.wav")}
+    return {"regular_brick_sound": mixer.Sound(config.REGULAR_BRICK_SOUND),
+            "indestructible_brick_sound": mixer.Sound(config.INDESTRUCTIBLE_BRICK_SOUND),
+            "explosive_brick_sound": mixer.Sound(config.EXPLOSIVE_BRICK_SOUND),
+            "invisible_brick_sound": mixer.Sound(config.INVISIBLE_BRICK_SOUND),
+            "falling_brick_sound": mixer.Sound(config.FALLING_BRICK_SOUND),
+            "activate_powerup_sound": mixer.Sound(config.ACTIVATE_POWERUP_SOUND),
+            "paddle_sound": mixer.Sound(config.PADDLE_SOUND),
+            "wall_sound": mixer.Sound(config.WALL_SOUND),
+            "thru_ball_sound": mixer.Sound(config.THRU_BALL_SOUND),
+            "laser_sound": mixer.Sound(config.LASER_SOUND)}
 
 
 def startGame():
@@ -400,9 +418,13 @@ def endScreen():
 def gameloop():
     game_sounds = initialSetup()
 
-    # to decrease speed of ball and power up movement on screen wrt FPS
+    # to decrease speed of ball, power up and laser movement on screen wrt FPS
     move_ball_counter = 0
     move_powerup_counter = 0
+    move_laser_counter = 0
+
+    # delay laser shots
+    shoot_laser_counter = 0
 
     # to decrease rate of change of color of rainbow bricks
     change_rainbow_brick_color_counter = 0
@@ -457,7 +479,7 @@ def gameloop():
         # activate time attack
         if not game.level.time_attack_activated:
             if int((datetime.now() - game.level.start_time).total_seconds()) > \
-                    config.TIME_BEFORE_TIME_ATTACK[game.level.level_num-1]:
+                    game.time_before_time_attack[game.level.level_num-1]:
                 game.level.activateTimeAttack()
 
         # move power ups
@@ -474,6 +496,24 @@ def gameloop():
 
             # deactivate power ups if its time of activation is finished
             deactivatePowerUps()
+
+        # move lasers and check collision
+        if move_laser_counter == 0:
+            for laser in lasers:
+                laser.move(game.game_window)
+                if laser.laserMissed():
+                    renderAndRemove(lasers, laser)
+                    break
+                elif checkLaserHit(laser, game_sounds):
+                    renderAndRemove(lasers, laser)
+                    break
+
+        # shoot lasers if activated
+        if shoot_laser_counter == 0:
+            for power_up in game.activated_power_ups:
+                if power_up.type == "SHOOT_LASER":
+                    lasers.extend(power_up.shootLasers(paddle, game_sounds["laser_sound"]))
+                    break
 
         # move balls and check collisions
         if move_ball_counter == 0:
@@ -518,7 +558,8 @@ def gameloop():
         updateDisplay()
         move_ball_counter = (move_ball_counter + 1) % game.ball_speed_coefficient
         move_powerup_counter = (move_powerup_counter + 1) % game.powerup_speed_coefficient
+        move_laser_counter = (move_laser_counter + 1) % game.laser_speed_coefficient
         change_rainbow_brick_color_counter = (change_rainbow_brick_color_counter + 1) % game.rainbow_brick_color_speed_coefficient
-
+        shoot_laser_counter = (shoot_laser_counter + 1) % game.time_between_laser_shots
 
 gameloop()

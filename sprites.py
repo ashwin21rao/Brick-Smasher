@@ -57,6 +57,7 @@ class Sprite:
     def setColor(self, color):
         self.color = color
         self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
+        self.array[:, -1] = " " + Back.RESET
 
 
 # hitbox for sprite

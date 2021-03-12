@@ -1,4 +1,5 @@
 from sprites import Sprite, SpriteCollisionMixin
+from lasers import Laser
 import copy
 from colorama import Back
 
@@ -35,7 +36,7 @@ class PowerUp(Sprite, SpriteCollisionMixin):
 class ExpandPaddle(PowerUp):
     type = "EXPAND_PADDLE"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         # self.render = partial(super().render, powerup_text="EP")
         self.initArray("EP")
@@ -48,7 +49,7 @@ class ExpandPaddle(PowerUp):
 class ShrinkPaddle(PowerUp):
     type = "SHRINK_PADDLE"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         # self.render = partial(super().render, powerup_text="SP")
         self.initArray("SP")
@@ -61,7 +62,7 @@ class ShrinkPaddle(PowerUp):
 class ThruBall(PowerUp):
     type = "THRU_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         # self.render = partial(super().render, powerup_text="TB")
         self.initArray("TB")
@@ -83,7 +84,7 @@ class ThruBall(PowerUp):
 class FireBall(PowerUp):
     type = "FIRE_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         # self.render = partial(super().render, powerup_text="FI")
         self.initArray("FI")
@@ -101,7 +102,7 @@ class FireBall(PowerUp):
 class FastBall(PowerUp):
     type = "FAST_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1,
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1,
                  initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
@@ -121,7 +122,7 @@ class FastBall(PowerUp):
 class SlowBall(PowerUp):
     type = "SLOW_BALL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1,
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1,
                  initial_ball_speed_coefficient=3):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.speed_multiplier = 1
@@ -140,7 +141,7 @@ class SlowBall(PowerUp):
 class ExtraLife(PowerUp):
     type = "EXTRA_LIFE"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
         # self.render = partial(super().render, powerup_text="XL")
@@ -154,7 +155,7 @@ class ExtraLife(PowerUp):
 class MultiplyBalls(PowerUp):
     type = "MULTIPLY_BALLS"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
         # self.render = partial(super().render, powerup_text="MB")
@@ -179,7 +180,7 @@ class MultiplyBalls(PowerUp):
 class PaddleGrab(PowerUp):
     type = "PADDLE_GRAB"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
         # self.render = partial(super().render, powerup_text="PG")
@@ -200,7 +201,7 @@ class PaddleGrab(PowerUp):
 class SkipLevel(PowerUp):
     type = "SKIP_LEVEL"
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, y_speed=1):
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
         self.life_multiplier = 1
         # self.render = partial(super().render, powerup_text="SK")
@@ -212,3 +213,26 @@ class SkipLevel(PowerUp):
 
     def deactivate(self, game):
         game.skip_level = False
+
+
+class ShootLaser(PowerUp):
+    type = "SHOOT_LASER"
+
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        # self.render = partial(super().render, powerup_text="SK")
+        self.initArray("SL")
+        self.can_deactivate = True
+
+    def activate(self, paddle, game_window):
+        paddle.activateLasers(game_window)
+
+    def deactivate(self, paddle, game_window):
+        paddle.deactivateLasers(game_window)
+
+    def shootLasers(self, paddle, laser_sound):
+        laser1 = Laser(paddle.x, paddle.y)
+        laser2 = Laser(paddle.x + paddle.width - 1, paddle.y)
+
+        laser_sound.play()
+        return laser1, laser2

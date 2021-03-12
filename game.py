@@ -30,18 +30,22 @@ class Game:
         self.reset()
 
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
-        self.powerup_speed_coefficient = config.INITIAL_POWERUP_SPEED_COEFFICIENT
+        self.powerup_speed_coefficient = config.POWERUP_SPEED_COEFFICIENT
+        self.laser_speed_coefficient = config.LASER_SPEED_COEFFICIENT
         self.rainbow_brick_color_speed_coefficient = config.RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT
+        self.time_between_laser_shots = config.TIME_BETWEEN_LASER_SHOTS
+        self.time_before_time_attack = config.TIME_BEFORE_TIME_ATTACK
 
         self.createGameBox()
 
     def reset(self):
-        self.level = Level(self.width, 3)
+        self.level = Level(self.width, 1)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
         self.won = False
         self.skip_level = False
+        self.activated_power_ups = {}  # power_up -> time of activation
 
     def startTimer(self):
         self.start_time = datetime.now()
