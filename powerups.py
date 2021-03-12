@@ -99,6 +99,25 @@ class FireBall(PowerUp):
             block.kill_on_collision = False
 
 
+class ExplosiveBall(PowerUp):
+    type = "EXPLOSIVE_BALL"
+
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        # self.render = partial(super().render, powerup_text="FI")
+        self.initArray("EX")
+        self.can_deactivate = True
+
+    def activate(self, blocks):
+        for block in blocks:
+            block.explodeOnCollision()
+
+    def deactivate(self, blocks):
+        for block in blocks:
+            if block.type != "EXPLOSIVE_BLOCK":
+                block.explode_on_collision = False
+
+
 class FastBall(PowerUp):
     type = "FAST_BALL"
 

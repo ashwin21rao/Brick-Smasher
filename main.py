@@ -131,6 +131,23 @@ def activatePowerUp(power_up, powerup_sound):
                 game.activated_power_ups.pop(p_up, None)
                 break
 
+        # deactivate explosive ball powerup
+        for p_up in game.activated_power_ups:
+            if p_up.type == "EXPLOSIVE_BALL":
+                p_up.deactivate(blocks)
+                game.activated_power_ups.pop(p_up, None)
+                break
+
+        power_up.activate(blocks)
+
+    elif power_up.type == "EXPLOSIVE_BALL":
+        # deactivate fireball powerup
+        for p_up in game.activated_power_ups:
+            if p_up.type == "FIRE_BALL":
+                p_up.deactivate(blocks)
+                game.activated_power_ups.pop(p_up, None)
+                break
+
         power_up.activate(blocks)
 
     elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
@@ -177,7 +194,7 @@ def deactivatePowerUps(reset_all=False):
             power_up.deactivate(game)
         elif power_up.type == "THRU_BALL":
             power_up.deactivate(balls, blocks)
-        elif power_up.type == "FIRE_BALL":
+        elif power_up.type == "FIRE_BALL" or power_up.type == "EXPLOSIVE_BALL":
             power_up.deactivate(blocks)
         elif power_up.type == "PADDLE_GRAB":
             power_up.deactivate(balls)

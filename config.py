@@ -1,5 +1,5 @@
-from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, FastBall, SlowBall, ExtraLife, MultiplyBalls, \
-                     PaddleGrab, SkipLevel, ShootLaser
+from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, ExplosiveBall, FastBall, SlowBall, ExtraLife, \
+                     MultiplyBalls, PaddleGrab, SkipLevel, ShootLaser
 
 
 # sounds
@@ -25,6 +25,7 @@ POWER_UP_TYPES = {
     ShrinkPaddle.type: ShrinkPaddle,
     ThruBall.type: ThruBall,
     FireBall.type: FireBall,
+    ExplosiveBall.type: ExplosiveBall,
     FastBall.type: FastBall,
     SlowBall.type: SlowBall,
     ExtraLife.type: ExtraLife,
@@ -49,7 +50,8 @@ LASER_SPEED_COEFFICIENT = 1
 RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT = 3
 
 POWERUP_SCORE_THRESHOLD = 20
-POWERUP_PROBABILITIES = [0.10, 0.13, 0.065, 0.10, 0.14, 0.10, 0.06, 0.10, 0.10, 0.005, 0.10]
+POWERUP_PROBABILITIES = [0.10, 0.11, 0.06, 0.08, 0.08, 0.10, 0.10, 0.06, 0.10, 0.10, 0.01, 0.10]
+# POWERUP_PROBABILITIES = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
 
 POWERUP_GENERATION_PROBABILITY = 0.10
 POWERUP_ACTIVATION_TIME = 10

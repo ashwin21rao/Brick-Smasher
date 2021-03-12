@@ -39,7 +39,7 @@ class Game:
         self.createGameBox()
 
     def reset(self):
-        self.level = Level(self.width, 1)
+        self.level = Level(self.width, 5)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
@@ -169,31 +169,32 @@ class Game:
 
         self.renderCenterText("EP: Expand Paddle        SP: Shrink Paddle", y + 5)
         self.renderCenterText("TB: Thru Ball            FI: Fire Ball    ", y + 6)
-        self.renderCenterText("MB: Multiply Balls       PG: Paddle Grab  ", y + 7)
-        self.renderCenterText("FB: Fast Ball            SB: Slow Ball    ", y + 8)
-        self.renderCenterText("SK: Skip Level           XL: Extra Life    ", y + 9)
+        self.renderCenterText("EX: Explosive Ball       SL: Shoot Lasers  ", y + 7)
+        self.renderCenterText("MB: Multiply Balls       PG: Paddle Grab  ", y + 8)
+        self.renderCenterText("FB: Fast Ball            SB: Slow Ball    ", y + 9)
+        self.renderCenterText("SK: Skip Level           XL: Extra Life    ", y + 10)
 
-        self.renderCenterText("BLOCKS:", y + 11)
+        self.renderCenterText("BLOCKS:", y + 12)
 
-        m = self.renderCenterText(f"        : 1 hit to break ", y + 13)
-        self.screen[y + 13, m - 1] = Back.GREEN + " "
-        self.screen[y + 13, m + 7] = Back.RESET + " "
+        m = self.renderCenterText(f"        : 1 hit to break ", y + 14)
+        self.screen[y + 14, m - 1] = Back.GREEN + " "
+        self.screen[y + 14, m + 7] = Back.RESET + " "
 
-        m = self.renderCenterText(f"        : 2 hits to break", y + 15)
-        self.screen[y + 15, m - 1] = Back.YELLOW + " "
-        self.screen[y + 15, m + 7] = Back.RESET + " "
+        m = self.renderCenterText(f"        : 2 hits to break", y + 16)
+        self.screen[y + 16, m - 1] = Back.YELLOW + " "
+        self.screen[y + 16, m + 7] = Back.RESET + " "
 
-        m = self.renderCenterText(f"        : 3 hits to break", y + 17)
-        self.screen[y + 17, m - 1] = Back.RED + " "
-        self.screen[y + 17, m + 7] = Back.RESET + " "
+        m = self.renderCenterText(f"        : 3 hits to break", y + 18)
+        self.screen[y + 18, m - 1] = Back.RED + " "
+        self.screen[y + 18, m + 7] = Back.RESET + " "
 
-        m = self.renderCenterText(f"        : Unbreakable    ", y + 19)
-        self.screen[y + 19, m - 1] = Back.BLUE + " "
-        self.screen[y + 19, m + 7] = Back.RESET + " "
+        m = self.renderCenterText(f"        : Unbreakable    ", y + 20)
+        self.screen[y + 20, m - 1] = Back.BLUE + " "
+        self.screen[y + 20, m + 7] = Back.RESET + " "
 
-        m = self.renderCenterText(f"        : Exploding Brick", y + 21)
-        self.screen[y + 21, m - 1] = Back.MAGENTA + " "
-        self.screen[y + 21, m + 7] = Back.RESET + " "
+        m = self.renderCenterText(f"        : Exploding Brick", y + 22)
+        self.screen[y + 22, m - 1] = Back.MAGENTA + " "
+        self.screen[y + 22, m + 7] = Back.RESET + " "
 
     def renderEndScreen(self):
         self.clearScreen()

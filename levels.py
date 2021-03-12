@@ -1,4 +1,4 @@
-from blocks import Block, ExplosiveBlock, RainbowBlock
+from blocks import Block, RainbowBlock
 from datetime import datetime
 
 
@@ -147,7 +147,7 @@ class LevelLayouts:
             for c in range(max_horizontal_blocks):
                 if (r == 5 and c not in [0, 1, 9, 10]) or (c == 5 and r not in [0, 1, 9, 10]) \
                     or (r, c) in [(2, 2), (2, 8), (8, 2), (8, 8)]:
-                    block = ExplosiveBlock(start_x + c * (width + 1), start_y + r * (height + 1), width, height)
+                    block = Block(start_x + c * (width + 1), start_y + r * (height + 1), width, height, type="EXPLOSIVE_BLOCK")
                 else:
                     if (r in range(1, 4) and c in range(1, 4)) or (r in range(7, 10) and c in range(1, 4)) or \
                        (r in range(1, 4) and c in range(7, 10)) or (r in range(7, 10) and c in range(7, 10)):

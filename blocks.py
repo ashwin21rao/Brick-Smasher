@@ -5,14 +5,15 @@ from colorama import Back
 
 
 class Block(Sprite):
-    type = "REGULAR_BLOCK"
     colors = ["green", "yellow", "red", None, "blue", "magenta"]
 
-    def __init__(self, x_coordinate, y_coordinate, width, height, color, invisible_new_color=None):
-        super().__init__(x_coordinate, y_coordinate, width, height, color)
+    def __init__(self, x_coordinate, y_coordinate, width, height, color=None, invisible_new_color=None, type="REGULAR_BLOCK"):
+        super().__init__(x_coordinate, y_coordinate, width, height, color if type != "EXPLOSIVE_BLOCK" else "magenta")
+        self.type = type
         self.strength = Block.colors.index(color)
-        self.original_color = color
+        self.original_color = self.color
         self.kill_on_collision = False
+        self.explode_on_collision = False if type == "REGULAR_BLOCK" else True
         self.invisible_new_color = invisible_new_color
         self.initArray()
 
@@ -31,11 +32,21 @@ class Block(Sprite):
         return self.strength
 
     def handleCollision(self, game_window, blocks):
+        # for explosive ball or explosive blocks
+        if self.explode_on_collision:
+            self.killExplosiveBlocks(blocks)
+            for block in blocks:
+                if block.strength == -1:
+                    block.clearOldPosition(game_window)
+            return
+
+        # for fire ball and thru ball
         if self.kill_on_collision:
             self.strength = -1
             self.clearOldPosition(game_window)
             return
 
+        # indestructible brick
         if self.color == "blue":
             return
 
@@ -54,8 +65,13 @@ class Block(Sprite):
     def killOnCollision(self):
         self.kill_on_collision = True
 
+    def explodeOnCollision(self):
+        self.explode_on_collision = True
+
     def playSound(self, brick_sounds):
-        if self.kill_on_collision:
+        if self.explode_on_collision:
+            brick_sounds["explosive_brick_sound"].play()
+        elif self.kill_on_collision:
             brick_sounds["thru_ball_sound"].play()
         elif self.color == "blue":
             brick_sounds["indestructible_brick_sound"].play()
@@ -63,13 +79,6 @@ class Block(Sprite):
             brick_sounds["invisible_brick_sound"].play()
         else:
             brick_sounds["regular_brick_sound"].play()
-
-
-class ExplosiveBlock(Block):
-    type = "EXPLOSIVE_BLOCK"
-
-    def __init__(self, x_coordinate, y_coordinate, width, height):
-        super().__init__(x_coordinate, y_coordinate, width, height, "magenta")
 
     def getAdjacentBlocks(self, blocks):
         adj_blocks = []
@@ -93,15 +102,6 @@ class ExplosiveBlock(Block):
                 block.killExplosiveBlocks(blocks)
             else:
                 block.strength = -1
-
-    def handleCollision(self, game_window, blocks):
-        self.killExplosiveBlocks(blocks)
-        for block in blocks:
-            if block.strength == -1:
-                block.clearOldPosition(game_window)
-
-    def playSound(self, brick_sounds):
-        brick_sounds["explosive_brick_sound"].play()
 
 
 class RainbowBlock(Block):
