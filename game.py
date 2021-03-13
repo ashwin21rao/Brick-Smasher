@@ -1,6 +1,8 @@
+import sys
 from datetime import datetime
-import config
 import numpy as np
+import config
+from rawterminal import RawTerminal as rt
 from screen import Screen
 from levels import Level
 from balls import Ball
@@ -27,6 +29,7 @@ class Game:
         self.time_between_laser_shots = config.TIME_BETWEEN_LASER_SHOTS
         self.time_before_time_attack = config.TIME_BEFORE_TIME_ATTACK
 
+        mixer.init()
         self.sounds = {"regular_brick_sound": mixer.Sound(config.REGULAR_BRICK_SOUND),
                        "indestructible_brick_sound": mixer.Sound(config.INDESTRUCTIBLE_BRICK_SOUND),
                        "explosive_brick_sound": mixer.Sound(config.EXPLOSIVE_BRICK_SOUND),
@@ -80,8 +83,10 @@ class Game:
 
     # check collision between 2 sprites
     def collideRect(self, sprite1, sprite2):
-        return (sprite1.hitbox.x + sprite1.hitbox.width >= sprite2.hitbox.x and sprite1.hitbox.x <= sprite2.hitbox.x + sprite2.hitbox.width) and \
-               (sprite1.hitbox.y + sprite1.hitbox.height >= sprite2.hitbox.y and sprite1.hitbox.y <= sprite2.hitbox.y + sprite2.hitbox.height)
+        return (sprite1.hitbox.x + sprite1.hitbox.width >= sprite2.hitbox.x and
+                sprite1.hitbox.x <= sprite2.hitbox.x + sprite2.hitbox.width) and \
+               (sprite1.hitbox.y + sprite1.hitbox.height >= sprite2.hitbox.y and
+                sprite1.hitbox.y <= sprite2.hitbox.y + sprite2.hitbox.height)
 
     # check collision between a sprite and a sprite group and return all collided sprites
     def spriteCollide(self, sprite, sprite_group):
@@ -171,7 +176,8 @@ class Game:
         elif char == 100 or char == 108:
             if self.paddle.x + self.paddle.width < self.width:
                 for sprite in movable_sprites:
-                    sprite.moveRight(self.game_window, speed=min(self.paddle.x_speed, self.width - (self.paddle.x + self.paddle.width)))
+                    sprite.moveRight(self.game_window,
+                                     speed=min(self.paddle.x_speed, self.width - (self.paddle.x + self.paddle.width)))
 
     def launchBall(self, char, ball):
         # check for 'w'/'i' key
@@ -187,7 +193,7 @@ class Game:
 
         for block in self.blocks:
             if laser.hitBlock(block):
-                self.handleBlockCollision(block)
+                self.handleBlockCollision(block, spawn_powerup=False)
                 hit = True
 
         return hit
@@ -199,7 +205,6 @@ class Game:
         power_up.playSound(self.sounds["activate_powerup_sound"])
 
         # update activation time of powerup
-        # global activated_power_ups
         self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
                                     p_up.type != power_up.type}
         self.activated_power_ups[power_up] = datetime.now()
@@ -322,7 +327,7 @@ class Game:
 
         return collided
 
-    def handleBlockCollision(self, block):
+    def handleBlockCollision(self, block, spawn_powerup=True):
         block.playSound(self.sounds)
 
         # handle block collision
@@ -333,11 +338,12 @@ class Game:
         self.blocks = [b for b in self.blocks if b.getStrength() >= 0]
 
         # create power up probabilistically on collision and if score is above threshold
-        if self.score > config.POWERUP_SCORE_THRESHOLD:
-            if np.random.choice([0, 1],
-                                p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
-                self.createPowerUp(block, np.random.choice(list(self.PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
-                # createPowerUp(block, random.choice(list(PowerUpTypes.values())))
+        if spawn_powerup:
+            if self.score > config.POWERUP_SCORE_THRESHOLD:
+                if np.random.choice([0, 1],
+                                    p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
+                    self.createPowerUp(block,
+                                       np.random.choice(list(self.PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
 
     def checkBlockCollision(self, ball):
         collided_blocks = self.spriteCollide(ball, self.blocks)
@@ -378,6 +384,19 @@ class Game:
 
     # ------------------------------------------ resetting functions ----------------------------------
 
+    def init(self):
+        rt.enableRawMode()
+        rt.hideCursor()
+
+        # play music
+        mixer.music.load(config.BACKGROUND_MUSIC)
+        mixer.music.play(loops=-1)
+
+    def renderAndRemove(self, sprite_list, sprite):
+        self.updateDisplay()
+        sprite.clearOldPosition(self.game_window)
+        sprite_list.remove(sprite)
+
     def respawn(self):
         self.deactivatePowerUps(reset_all=True)
         for power_up in self.power_ups:
@@ -406,4 +425,32 @@ class Game:
 
         self.respawn()
         self.createBlocks()
+
+    def restart(self):
+        # initialise settings
+        rt.removeKeyboardDelay()
+
+        # reset game timer
+        self.startTimer()
+
+        # create sprites
+        self.advanceLevel()
+
+        # render screen
+        self.updateDisplay()
+        # self.printScreen()
+        # sys.stdout.flush()
+
+    # --------------------------- update display ------------------------------
+
+    def updateDisplay(self):
+        # update timer
+        self.tick()
+
+        # update display
+        self.updateScreen()
+
+        # print screen
+        self.printScreen()
+        sys.stdout.flush()
 
