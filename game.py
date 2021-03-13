@@ -2,6 +2,8 @@ from datetime import datetime
 import config
 from screen import Screen
 from levels import Level
+from balls import Ball
+from paddle import Paddle
 
 
 class Game:
@@ -9,9 +11,11 @@ class Game:
         self.screen = Screen(width, height)
         self.game_window = self.screen.game_window
         self.width = self.screen.width
+        self.height = self.screen.height
 
         self.FPS = config.FPS
         self.total_levels = config.TOTAL_LEVELS
+        self.PowerUpTypes = config.POWER_UP_TYPES
         self.reset()
 
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
@@ -29,7 +33,13 @@ class Game:
         self.ticks = 0
         self.won = False
         self.skip_level = False
+
         self.activated_power_ups = {}  # power_up -> time of activation
+        self.blocks = []
+        self.paddle = None
+        self.balls = []
+        self.power_ups = []
+        self.lasers = []
 
     def startTimer(self):
         self.start_time = datetime.now()
@@ -102,3 +112,29 @@ class Game:
             if block.color != "blue":
                 return False
         return True
+
+    # -------------------------------- new methods -------------------------------------
+    def createBlocks(self):
+        self.blocks = self.level.getBlocks()
+
+    def createPaddle(self):
+        width = 10
+        height = 1
+
+        self.paddle = Paddle(self.width // 2 - width // 2, self.height - height - 1, width, height, "white")
+
+    def createBall(self, paddle):
+        width = 2
+        height = 1
+
+        ball = Ball(paddle.x + paddle.width // 2 - width // 2, paddle.y - 1, width, height, "cyan")
+        self.balls.append(ball)
+
+    def createPowerUp(self, block, PowerUpType):
+        if PowerUpType.type == "FAST_BALL" or PowerUpType.type == "SLOW_BALL":
+            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2,
+                                   initial_ball_speed_coefficient=config.INITIAL_BALL_SPEED_COEFFICIENT)
+        else:
+            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2)
+
+        self.power_ups.append(power_up)
