@@ -35,7 +35,7 @@ def log(str):
 # -------------------------------------------------------------------------------------------------------
 def createBlocks():
     global blocks
-    blocks = game.level.getLayout()
+    blocks = game.level.getBlocks()
 
 
 def createPaddle(game_width, game_height):
