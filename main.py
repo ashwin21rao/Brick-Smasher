@@ -295,6 +295,9 @@ def checkLaserHit(laser, audio_sounds):
 
 # -------------------------------------------------------------------------------------------------------
 def updateDisplay():
+    # update game timer
+    game.tick()
+
     # update display
     sprites = blocks + lasers + power_ups + [paddle] + balls
     game.updateScreen(sprites)
