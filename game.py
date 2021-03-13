@@ -1,9 +1,11 @@
 from datetime import datetime
 import config
+import numpy as np
 from screen import Screen
 from levels import Level
 from balls import Ball
 from paddle import Paddle
+from pygame import mixer
 
 
 class Game:
@@ -24,6 +26,18 @@ class Game:
         self.rainbow_brick_color_speed_coefficient = config.RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT
         self.time_between_laser_shots = config.TIME_BETWEEN_LASER_SHOTS
         self.time_before_time_attack = config.TIME_BEFORE_TIME_ATTACK
+
+        self.sounds = {"regular_brick_sound": mixer.Sound(config.REGULAR_BRICK_SOUND),
+                       "indestructible_brick_sound": mixer.Sound(config.INDESTRUCTIBLE_BRICK_SOUND),
+                       "explosive_brick_sound": mixer.Sound(config.EXPLOSIVE_BRICK_SOUND),
+                       "invisible_brick_sound": mixer.Sound(config.INVISIBLE_BRICK_SOUND),
+                       "falling_brick_sound": mixer.Sound(config.FALLING_BRICK_SOUND),
+                       "activate_powerup_sound": mixer.Sound(config.ACTIVATE_POWERUP_SOUND),
+                       "paddle_sound": mixer.Sound(config.PADDLE_SOUND),
+                       "wall_sound": mixer.Sound(config.WALL_SOUND),
+                       "thru_ball_sound": mixer.Sound(config.THRU_BALL_SOUND),
+                       "laser_sound": mixer.Sound(config.LASER_SOUND),
+                       "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND)}
 
     def reset(self):
         self.level = Level(self.screen.width, 1)
@@ -51,7 +65,8 @@ class Game:
     def printScreen(self, full=False):
         self.screen.printScreen(self.ticks, self.score, self.level.level_num, self.lives, full=full)
 
-    def updateScreen(self, sprite_list):
+    def updateScreen(self):
+        sprite_list = self.blocks + self.lasers + self.power_ups + [self.paddle] + self.balls
         self.screen.updateScreen(sprite_list)
 
     def clearScreen(self):
@@ -123,11 +138,11 @@ class Game:
 
         self.paddle = Paddle(self.width // 2 - width // 2, self.height - height - 1, width, height, "white")
 
-    def createBall(self, paddle):
+    def createBall(self):
         width = 2
         height = 1
 
-        ball = Ball(paddle.x + paddle.width // 2 - width // 2, paddle.y - 1, width, height, "cyan")
+        ball = Ball(self.paddle.x + self.paddle.width // 2 - width // 2, self.paddle.y - 1, width, height, "cyan")
         self.balls.append(ball)
 
     def createPowerUp(self, block, PowerUpType):
@@ -138,3 +153,257 @@ class Game:
             power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2)
 
         self.power_ups.append(power_up)
+
+    # ----------------------------------- misc -----------------------------------
+
+    def movePaddle(self, char):
+        movable_sprites = []
+        for ball in self.balls:
+            if not ball.launched:
+                movable_sprites.append(ball)
+        movable_sprites.append(self.paddle)
+
+        # check for 'a'/'j' and 'd'/'l' keys
+        if char == 97 or char == 106:
+            if self.paddle.x > 0:
+                for sprite in movable_sprites:
+                    sprite.moveLeft(self.game_window, speed=min(self.paddle.x_speed, self.paddle.x))
+        elif char == 100 or char == 108:
+            if self.paddle.x + self.paddle.width < self.width:
+                for sprite in movable_sprites:
+                    sprite.moveRight(self.game_window, speed=min(self.paddle.x_speed, self.width - (self.paddle.x + self.paddle.width)))
+
+    def launchBall(self, char, ball):
+        # check for 'w'/'i' key
+        if char == 119 or char == 105:
+            ball.launch()
+            self.paddle.setSpeed(2)
+            return True
+
+        return False
+
+    def checkLaserHit(self, laser):
+        hit = False
+
+        for block in self.blocks:
+            if laser.hitBlock(block):
+                self.handleBlockCollision(block)
+                hit = True
+
+        return hit
+
+    # ---------------------------------------- activate/deactivate powerups --------------------------
+
+    def activatePowerUp(self, power_up):
+        self.addPowerUpScore()
+        power_up.playSound(self.sounds["activate_powerup_sound"])
+
+        # update activation time of powerup
+        # global activated_power_ups
+        self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
+                                    p_up.type != power_up.type}
+        self.activated_power_ups[power_up] = datetime.now()
+
+        if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
+            power_up.activate(self.paddle, self.game_window)
+
+            # remove opposite powerup
+            self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
+                                        p_up.type != (
+                                            "SHRINK_PADDLE" if power_up.type == "EXPAND_PADDLE" else "EXPAND_PADDLE")}
+
+            # release grabbed balls if any
+            for ball in self.balls:
+                if not ball.launched:
+                    ball.launch()
+
+        elif power_up.type == "THRU_BALL":
+            # deactivate fireball powerup
+            for p_up in self.activated_power_ups:
+                if p_up.type == "FIRE_BALL":
+                    p_up.deactivate(self.blocks)
+                    self.activated_power_ups.pop(p_up, None)
+                    break
+
+            power_up.activate(self.balls, self.blocks)
+
+        elif power_up.type == "FIRE_BALL":
+            # deactivate thruball powerup
+            for p_up in self.activated_power_ups:
+                if p_up.type == "THRU_BALL":
+                    p_up.deactivate(self.balls, self.blocks)
+                    self.activated_power_ups.pop(p_up, None)
+                    break
+
+            # deactivate explosive ball powerup
+            for p_up in self.activated_power_ups:
+                if p_up.type == "EXPLOSIVE_BALL":
+                    p_up.deactivate(self.blocks)
+                    self.activated_power_ups.pop(p_up, None)
+                    break
+
+            power_up.activate(self.blocks)
+
+        elif power_up.type == "EXPLOSIVE_BALL":
+            # deactivate fireball powerup
+            for p_up in self.activated_power_ups:
+                if p_up.type == "FIRE_BALL":
+                    p_up.deactivate(self.blocks)
+                    self.activated_power_ups.pop(p_up, None)
+                    break
+
+            power_up.activate(self.blocks)
+
+        elif power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
+            opposite_type = "SLOW_BALL" if power_up.type == "FAST_BALL" else "FAST_BALL"
+
+            # deactivate opposite powerup
+            for p_up in self.activated_power_ups:
+                if p_up.type == opposite_type:
+                    p_up.deactivate(self)
+                    self.activated_power_ups.pop(p_up, None)
+                    break
+
+            power_up.activate(self)
+
+        elif power_up.type == "EXTRA_LIFE":
+            power_up.activate(self)
+
+        elif power_up.type == "MULTIPLY_BALLS":
+            power_up.activate(self.balls, self.game_window)
+
+            # release grabbed balls if any
+            for ball in self.balls:
+                if not ball.launched:
+                    ball.launch()
+
+        elif power_up.type == "PADDLE_GRAB":
+            power_up.activate(self.balls)
+
+        elif power_up.type == "SKIP_LEVEL":
+            power_up.activate(self)
+
+        elif power_up.type == "SHOOT_LASER":
+            power_up.activate(self.paddle, self.game_window)
+
+    def deactivatePowerUps(self, reset_all=False):
+        to_deactivate = [power_up for power_up, time in self.activated_power_ups.items()
+                         if power_up.can_deactivate and
+                         (reset_all or int((datetime.now() - time).total_seconds()) > config.POWERUP_ACTIVATION_TIME)]
+
+        for power_up in to_deactivate:
+            if power_up.type == "FAST_BALL" or power_up.type == "SLOW_BALL":
+                power_up.deactivate(self)
+            elif power_up.type == "THRU_BALL":
+                power_up.deactivate(self.balls, self.blocks)
+            elif power_up.type == "FIRE_BALL" or power_up.type == "EXPLOSIVE_BALL":
+                power_up.deactivate(self.blocks)
+            elif power_up.type == "PADDLE_GRAB":
+                power_up.deactivate(self.balls)
+            elif power_up.type == "SKIP_LEVEL":
+                power_up.deactivate(self)
+            elif power_up.type == "SHOOT_LASER":
+                power_up.deactivate(self.paddle, self.game_window)
+
+            self.activated_power_ups.pop(power_up, None)
+
+    # ----------------------------------- collision helpers -----------------------------------
+
+    def checkCollision(self, ball):
+        return self.checkBlockCollision(ball) or \
+               self.checkPaddleCollision(ball) or \
+               ball.handleWallCollision(self.game_window, self.sounds["wall_sound"])
+
+    def checkPaddleCollision(self, ball):
+        collided = ball.handlePaddleCollision(self.paddle, {"paddle_bounce_sound": self.sounds["paddle_sound"],
+                                                            "paddle_grab_sound": self.sounds["paddle_grab_sound"]})
+        if collided and self.level.time_attack_activated:
+            self.level.timeAttack(self.game_window, self.blocks, self.sounds["falling_brick_sound"])
+
+        return collided
+
+    def handleBlockCollision(self, block):
+        block.playSound(self.sounds)
+
+        # handle block collision
+        block.handleCollision(self.game_window, self.blocks)
+        for b in self.blocks:
+            if b.getStrength() < 0:
+                self.addBlockScore(b.original_color, b.invisible_new_color)
+        self.blocks = [b for b in self.blocks if b.getStrength() >= 0]
+
+        # create power up probabilistically on collision and if score is above threshold
+        if self.score > config.POWERUP_SCORE_THRESHOLD:
+            if np.random.choice([0, 1],
+                                p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
+                self.createPowerUp(block, np.random.choice(list(self.PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
+                # createPowerUp(block, random.choice(list(PowerUpTypes.values())))
+
+    def checkBlockCollision(self, ball):
+        collided_blocks = self.spriteCollide(ball, self.blocks)
+        if not collided_blocks:
+            return False
+
+        # collision with 3 blocks simultaneously (corner collision)
+        if len(collided_blocks) == 3:
+            for block in collided_blocks:
+                self.handleBlockCollision(block)
+            if ball.collidable:
+                ball.reflectHorizontalAndVertical()
+            return True
+
+        # handle collision with sides (not corners)
+        for block in collided_blocks:
+            if not ball.checkCornerCollision(block):
+                self.handleBlockCollision(block)
+                ball.handleBlockCollision(block)
+                return True
+
+        # handle simultaneous vertical collision with corners of 2 blocks
+        if len(collided_blocks) == 2:
+            for block in collided_blocks:
+                self.handleBlockCollision(block)
+            if ball.collidable:
+                ball.reflectVertical()
+            return True
+
+        # handle collision with corner of a single block
+        block = collided_blocks[0]
+        if ball.handleCornerCollision(block):
+            self.handleBlockCollision(block)
+            ball.handleBlockCollision(block)
+            return True
+
+        return False
+
+    # ------------------------------------------ resetting functions ----------------------------------
+
+    def respawn(self):
+        self.deactivatePowerUps(reset_all=True)
+        for power_up in self.power_ups:
+            power_up.clearOldPosition(self.game_window)
+
+        self.power_ups = []
+        self.activated_power_ups = {}
+
+        for laser in self.lasers:
+            laser.clearOldPosition(self.game_window)
+        self.lasers = []
+
+        if self.paddle is not None:
+            self.paddle.clearOldPosition(self.game_window)
+        self.createPaddle()
+        self.createBall()
+
+    def advanceLevel(self):
+        for block in self.blocks:
+            block.clearOldPosition(self.game_window)
+        for ball in self.balls:
+            ball.clearOldPosition(self.game_window)
+
+        self.blocks = []
+        self.balls = []
+
+        self.respawn()
+        self.createBlocks()
+
