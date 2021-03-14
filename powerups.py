@@ -171,6 +171,20 @@ class ExtraLife(PowerUp):
         game.lives += self.life_multiplier
 
 
+class LoseLife(PowerUp):
+    type = "LOSE_LIFE"
+
+    def __init__(self, x_coordinate, y_coordinate, width=2, height=1, color=None, y_speed=1):
+        super().__init__(x_coordinate, y_coordinate, width, height, color=color, y_speed=y_speed)
+        self.life_multiplier = 1
+        # self.render = partial(super().render, powerup_text="XL")
+        self.initArray("LL")
+        self.can_deactivate = False
+
+    def activate(self, game):
+        game.lives -= self.life_multiplier
+
+
 class MultiplyBalls(PowerUp):
     type = "MULTIPLY_BALLS"
 

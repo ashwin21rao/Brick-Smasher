@@ -56,10 +56,15 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         if self.collidable:
             if self.checkVerticalCollision(block):
                 self.reflectVertical()
+                return True
             elif self.checkHorizontalCollision(block):
                 self.reflectHorizontal()
+                return True
             elif self.checkCornerCollision(block) and self.handleCornerCollision(block):
                 self.reflectHorizontal()
+                return True
+
+        return False
 
     def handlePaddleCollision(self, paddle, paddle_sounds):
         if self.checkHorizontalCollision(paddle) or \

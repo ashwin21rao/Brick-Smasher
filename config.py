@@ -1,5 +1,5 @@
 from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, ExplosiveBall, FastBall, SlowBall, ExtraLife, \
-                     MultiplyBalls, PaddleGrab, SkipLevel, ShootLaser
+                     LoseLife, MultiplyBalls, PaddleGrab, SkipLevel, ShootLaser
 
 
 # sounds
@@ -30,6 +30,7 @@ POWER_UP_TYPES = {
     FastBall.type: FastBall,
     SlowBall.type: SlowBall,
     ExtraLife.type: ExtraLife,
+    LoseLife.type: LoseLife,
     MultiplyBalls.type: MultiplyBalls,
     PaddleGrab.type: PaddleGrab,
     SkipLevel.type: SkipLevel,
@@ -42,7 +43,7 @@ POWER_UP_TYPES = {
 DEFAULT_WINDOW_WIDTH = 75
 DEFAULT_WINDOW_HEIGHT = 34
 FPS = 60
-TOTAL_LEVELS = 5
+TOTAL_LEVELS = 6
 TOTAL_LIVES = 3
 
 INITIAL_BALL_SPEED_COEFFICIENT = 3
@@ -51,12 +52,18 @@ LASER_SPEED_COEFFICIENT = 1
 RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT = 3
 
 POWERUP_SCORE_THRESHOLD = 20
-POWERUP_PROBABILITIES = [0.10, 0.10, 0.06, 0.08, 0.08, 0.10, 0.10, 0.06, 0.10, 0.10, 0.01, 0.11]
+POWERUP_PROBABILITIES = [0.10, 0.10, 0.06, 0.08, 0.08, 0.10, 0.10, 0.06, 0.0, 0.10, 0.10, 0.01, 0.11]
 # POWERUP_PROBABILITIES = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
 
 POWERUP_GENERATION_PROBABILITY = 0.10
 POWERUP_ACTIVATION_TIME = 10
 
-TIME_BEFORE_TIME_ATTACK = [120, 120, 240, 240, 240]
+TIME_BEFORE_TIME_ATTACK = [120, 120, 240, 240, 240, 600]
 
 TIME_BETWEEN_LASER_SHOTS = 20
+
+
+def log(string):
+    f = open("output.txt", "a")
+    f.write(string)
+    f.close()

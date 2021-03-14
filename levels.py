@@ -1,5 +1,4 @@
 from blocks import Block, RainbowBlock
-from ufo import Ufo
 from datetime import datetime
 
 
@@ -24,18 +23,6 @@ class Level:
             block.moveDown(game_window)
 
         falling_brick_sound.play()
-
-
-class BossLevel(Level):
-    def __init__(self, game_width, level_num):
-        super().__init__(game_width, level_num)
-        self.blocks, self.ufo = self.layout
-
-    def getUfo(self):
-        return self.ufo
-
-    def getBlocks(self):
-        return self.blocks
 
 
 class LevelLayouts:
@@ -173,12 +160,7 @@ class LevelLayouts:
 
         return blocks
 
-
     @staticmethod
     def level6(game_width):
         blocks = []
-
-        ufo = Ufo(0, 1, "blue")
-        ufo.updatePosition(x=(game_width // 2 - ufo.width // 2))
-
-        return blocks, ufo
+        return blocks

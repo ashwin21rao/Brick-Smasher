@@ -9,12 +9,6 @@ from rawterminal import RawTerminal as rt
 game = Game()
 
 
-def log(string):
-    f = open("output.txt", "a")
-    f.write(string)
-    f.close()
-
-
 # -------------------------------------------------------------------------------------------------------
 def startScreen():
     game.reset()
@@ -189,6 +183,10 @@ def gameloop():
             else:
                 game.respawn()
                 time.sleep(0.5)
+
+        # if no lives are left (even if balls are present)
+        if game.lives == 0:
+            done = True
 
         # if blocks reached paddle (time attack)
         for block in game.blocks:

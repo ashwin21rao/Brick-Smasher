@@ -7,6 +7,7 @@ from screen import Screen
 from levels import Level
 from balls import Ball
 from paddle import Paddle
+from ufo import Ufo
 from pygame import mixer
 
 
@@ -43,13 +44,14 @@ class Game:
                        "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND)}
 
     def reset(self):
-        self.level = Level(self.screen.width, 1)
+        self.level = Level(self.width, 6)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
         self.ticks = 0
         self.won = False
         self.skip_level = False
+        self.boss_level_activated = True
 
         self.activated_power_ups = {}  # power_up -> time of activation
         self.blocks = []
@@ -57,6 +59,7 @@ class Game:
         self.balls = []
         self.power_ups = []
         self.lasers = []
+        self.ufo = None
 
     def startTimer(self):
         self.start_time = datetime.now()
@@ -70,6 +73,9 @@ class Game:
 
     def updateScreen(self):
         sprite_list = self.blocks + self.lasers + self.power_ups + [self.paddle] + self.balls
+        if self.boss_level_activated:
+            sprite_list = [self.ufo] + sprite_list
+
         self.screen.updateScreen(sprite_list)
 
     def clearScreen(self):
@@ -125,9 +131,15 @@ class Game:
         self.lives -= 1
 
     def incrementLevel(self):
-        self.level = Level(self.screen.width, self.level.level_num + 1)
+        if self.level.level_num + 1 == self.total_levels:
+            self.boss_level_activated = True
+        self.level = Level(self.width, self.level.level_num + 1)
 
     def levelComplete(self, blocks):
+        # TODO: add boss level logic
+        if self.boss_level_activated:
+            return self.ufo.lives == 0
+
         for block in blocks:
             if block.color != "blue":
                 return False
@@ -159,6 +171,10 @@ class Game:
 
         self.power_ups.append(power_up)
 
+    def createUfo(self):
+        self.ufo = Ufo(0, 1)
+        self.ufo.updatePosition(x=(self.width // 2 - self.ufo.width // 2))
+
     # ----------------------------------- misc -----------------------------------
 
     def movePaddle(self, char):
@@ -166,6 +182,10 @@ class Game:
         for ball in self.balls:
             if not ball.launched:
                 movable_sprites.append(ball)
+
+        if self.boss_level_activated:
+            movable_sprites.append(self.ufo)
+
         movable_sprites.append(self.paddle)
 
         # check for 'a'/'j' and 'd'/'l' keys
@@ -271,7 +291,7 @@ class Game:
 
             power_up.activate(self)
 
-        elif power_up.type == "EXTRA_LIFE":
+        elif power_up.type == "EXTRA_LIFE" or power_up.type == "LOSE_LIFE":
             power_up.activate(self)
 
         elif power_up.type == "MULTIPLY_BALLS":
@@ -317,7 +337,8 @@ class Game:
     def checkCollision(self, ball):
         return self.checkBlockCollision(ball) or \
                self.checkPaddleCollision(ball) or \
-               ball.handleWallCollision(self.game_window, self.sounds["wall_sound"])
+               ball.handleWallCollision(self.game_window, self.sounds["wall_sound"]) or \
+               self.checkUfoCollision(ball)
 
     def checkPaddleCollision(self, ball):
         collided = ball.handlePaddleCollision(self.paddle, {"paddle_bounce_sound": self.sounds["paddle_sound"],
@@ -414,6 +435,14 @@ class Game:
         self.createPaddle()
         self.createBall()
 
+        # boss level
+        if self.boss_level_activated:
+            if self.ufo is not None:
+                self.ufo.clearOldPosition(self.game_window)
+                self.ufo.updatePosition(x=(self.width // 2 - self.ufo.width // 2))
+            else:
+                self.createUfo()
+
     def advanceLevel(self):
         for block in self.blocks:
             block.clearOldPosition(self.game_window)
@@ -454,3 +483,25 @@ class Game:
         self.printScreen()
         sys.stdout.flush()
 
+    # ------------------------ boss level --------------------------------------
+
+    def checkUfoCollision(self, ball, spawn_powerup=True):
+        collided = self.boss_level_activated and ball.handleBlockCollision(self.ufo)
+        if collided:
+            self.ufo.handleCollision(self.sounds["explosive_brick_sound"])
+
+            # create bomb
+            power_up = self.PowerUpTypes["LOSE_LIFE"](self.paddle.x + self.paddle.width // 2, self.ufo.y + self.ufo.height)
+            self.power_ups.append(power_up)
+
+            # # create power up probabilistically on collision and if score is above threshold
+            # if spawn_powerup:
+            #     if self.score > config.POWERUP_SCORE_THRESHOLD:
+            #         if np.random.choice([0, 1],
+            #                             p=[1 - config.POWERUP_GENERATION_PROBABILITY,
+            #                                config.POWERUP_GENERATION_PROBABILITY]):
+            #             self.createPowerUp(block,
+            #                                np.random.choice(list(self.PowerUpTypes.values()),
+            #                                                 p=config.POWERUP_PROBABILITIES))
+
+        return collided
