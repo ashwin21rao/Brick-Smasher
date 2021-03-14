@@ -9,6 +9,18 @@ from rawterminal import RawTerminal as rt
 game = Game()
 
 
+def moveFallingSprites(sprite_list):
+    for sprite in sprite_list:
+        sprite.move(game.game_window)
+        if sprite.powerUpMissed(game.game_window.shape[0]):
+            game.renderAndRemove(sprite_list, sprite)
+            break
+        elif sprite.ready(game.paddle):
+            game.activatePowerUp(sprite)
+            game.renderAndRemove(sprite_list, sprite)
+            break
+
+
 # -------------------------------------------------------------------------------------------------------
 def startScreen():
     game.reset()
@@ -62,13 +74,15 @@ def endScreen():
 def gameloop():
     game.init()
 
-    # to decrease speed of ball, power up and laser movement on screen wrt FPS
+    # to decrease speed of ball, power up, laser, bomb movement on screen wrt FPS
     move_ball_counter = 0
     move_powerup_counter = 0
     move_laser_counter = 0
+    move_bomb_counter = 0
 
-    # delay laser shots
+    # delay laser shots, bomb drops
     shoot_laser_counter = 0
+    drop_bomb_counter = 0
 
     # to decrease rate of change of color of rainbow bricks
     change_rainbow_brick_color_counter = 0
@@ -126,17 +140,28 @@ def gameloop():
                     game.time_before_time_attack[game.level.level_num-1]:
                 game.level.activateTimeAttack()
 
+        # drop bombs if boss level
+        if drop_bomb_counter == 0:
+            if game.boss_level_activated:
+                game.createBomb()
+
+        # move bombs
+        if move_bomb_counter == 0:
+            moveFallingSprites(game.bombs)
+
         # move power ups
         if move_powerup_counter == 0:
-            for power_up in game.power_ups:
-                power_up.move(game.game_window)
-                if power_up.powerUpMissed(game.game_window.shape[0]):
-                    game.renderAndRemove(game.power_ups, power_up)
-                    break
-                elif power_up.ready(game.paddle):
-                    game.activatePowerUp(power_up)
-                    game.renderAndRemove(game.power_ups, power_up)
-                    break
+            moveFallingSprites(game.power_ups)
+
+            # for power_up in game.power_ups:
+            #     power_up.move(game.game_window)
+            #     if power_up.powerUpMissed(game.game_window.shape[0]):
+            #         game.renderAndRemove(game.power_ups, power_up)
+            #         break
+            #     elif power_up.ready(game.paddle):
+            #         game.activatePowerUp(power_up)
+            #         game.renderAndRemove(game.power_ups, power_up)
+            #         break
 
             # deactivate power ups if its time of activation is finished
             game.deactivatePowerUps()
@@ -207,8 +232,10 @@ def gameloop():
         move_ball_counter = (move_ball_counter + 1) % game.ball_speed_coefficient
         move_powerup_counter = (move_powerup_counter + 1) % game.powerup_speed_coefficient
         move_laser_counter = (move_laser_counter + 1) % game.laser_speed_coefficient
+        move_bomb_counter = (move_bomb_counter + 1) % game.bomb_speed_coefficient
         change_rainbow_brick_color_counter = (change_rainbow_brick_color_counter + 1) % game.rainbow_brick_color_speed_coefficient
         shoot_laser_counter = (shoot_laser_counter + 1) % game.time_between_laser_shots
+        drop_bomb_counter = (drop_bomb_counter + 1) % game.time_between_bomb_drops
 
         # render based on FPS
         time.sleep(1 / game.FPS)

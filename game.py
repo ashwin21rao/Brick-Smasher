@@ -26,9 +26,11 @@ class Game:
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
         self.powerup_speed_coefficient = config.POWERUP_SPEED_COEFFICIENT
         self.laser_speed_coefficient = config.LASER_SPEED_COEFFICIENT
+        self.bomb_speed_coefficient = config.BOMB_SPEED_COEFFICIENT
         self.rainbow_brick_color_speed_coefficient = config.RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT
         self.time_between_laser_shots = config.TIME_BETWEEN_LASER_SHOTS
         self.time_before_time_attack = config.TIME_BEFORE_TIME_ATTACK
+        self.time_between_bomb_drops = config.TIME_BETWEEN_BOMB_DROPS
 
         mixer.init()
         self.sounds = {"regular_brick_sound": mixer.Sound(config.REGULAR_BRICK_SOUND),
@@ -60,6 +62,9 @@ class Game:
         self.power_ups = []
         self.lasers = []
         self.ufo = None
+        self.bombs = []
+
+        self.time_between_bomb_drops = config.TIME_BETWEEN_BOMB_DROPS
 
     def startTimer(self):
         self.start_time = datetime.now()
@@ -74,7 +79,7 @@ class Game:
     def updateScreen(self):
         sprite_list = self.blocks + self.lasers + self.power_ups + [self.paddle] + self.balls
         if self.boss_level_activated:
-            sprite_list = [self.ufo] + sprite_list
+            sprite_list = [self.ufo] + self.bombs + sprite_list
 
         self.screen.updateScreen(sprite_list)
 
@@ -164,10 +169,10 @@ class Game:
 
     def createPowerUp(self, block, PowerUpType):
         if PowerUpType.type == "FAST_BALL" or PowerUpType.type == "SLOW_BALL":
-            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2,
+            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height - 1,
                                    initial_ball_speed_coefficient=config.INITIAL_BALL_SPEED_COEFFICIENT)
         else:
-            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height // 2)
+            power_up = PowerUpType(block.x + block.width // 2, block.y + block.height - 1)
 
         self.power_ups.append(power_up)
 
@@ -332,6 +337,15 @@ class Game:
 
             self.activated_power_ups.pop(power_up, None)
 
+    def spawnPowerUp(self, block):
+        # create power up probabilistically on collision and if score is above threshold
+        if self.score > config.POWERUP_SCORE_THRESHOLD:
+            if np.random.choice([0, 1],
+                                p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
+                self.createPowerUp(block,
+                                   np.random.choice(list(self.PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
+
+
     # ----------------------------------- collision helpers -----------------------------------
 
     def checkCollision(self, ball):
@@ -358,13 +372,8 @@ class Game:
                 self.addBlockScore(b.original_color, b.invisible_new_color)
         self.blocks = [b for b in self.blocks if b.getStrength() >= 0]
 
-        # create power up probabilistically on collision and if score is above threshold
         if spawn_powerup:
-            if self.score > config.POWERUP_SCORE_THRESHOLD:
-                if np.random.choice([0, 1],
-                                    p=[1 - config.POWERUP_GENERATION_PROBABILITY, config.POWERUP_GENERATION_PROBABILITY]):
-                    self.createPowerUp(block,
-                                       np.random.choice(list(self.PowerUpTypes.values()), p=config.POWERUP_PROBABILITIES))
+            self.spawnPowerUp(block)
 
     def checkBlockCollision(self, ball):
         collided_blocks = self.spriteCollide(ball, self.blocks)
@@ -425,6 +434,10 @@ class Game:
 
         self.power_ups = []
         self.activated_power_ups = {}
+
+        for bomb in self.bombs:
+            bomb.clearOldPosition(self.game_window)
+        self.bombs = []
 
         for laser in self.lasers:
             laser.clearOldPosition(self.game_window)
@@ -489,19 +502,19 @@ class Game:
         collided = self.boss_level_activated and ball.handleBlockCollision(self.ufo)
         if collided:
             self.ufo.handleCollision(self.sounds["explosive_brick_sound"])
+            self.addUfoScore()
 
-            # create bomb
-            power_up = self.PowerUpTypes["LOSE_LIFE"](self.paddle.x + self.paddle.width // 2, self.ufo.y + self.ufo.height)
-            self.power_ups.append(power_up)
+            if spawn_powerup:
+                self.spawnPowerUp(self.ufo)
 
-            # # create power up probabilistically on collision and if score is above threshold
-            # if spawn_powerup:
-            #     if self.score > config.POWERUP_SCORE_THRESHOLD:
-            #         if np.random.choice([0, 1],
-            #                             p=[1 - config.POWERUP_GENERATION_PROBABILITY,
-            #                                config.POWERUP_GENERATION_PROBABILITY]):
-            #             self.createPowerUp(block,
-            #                                np.random.choice(list(self.PowerUpTypes.values()),
-            #                                                 p=config.POWERUP_PROBABILITIES))
+            if self.ufo.lives != 0 and self.ufo.lives % 5 == 0:
+                self.time_between_bomb_drops -= 20
 
         return collided
+
+    def createBomb(self):
+        bomb = self.PowerUpTypes["LOSE_LIFE"](self.paddle.x + self.paddle.width // 2, self.ufo.y + self.ufo.height - 1)
+        self.bombs.append(bomb)
+
+    def addUfoScore(self):
+        self.score += 100

@@ -163,4 +163,13 @@ class LevelLayouts:
     @staticmethod
     def level6(game_width):
         blocks = []
+        width = 6
+        height = 1
+
+        start_y = 15
+
+        # for r in range(0, 5):
+        #     blocks.append(Block(4, start_y + r * (height + 1), width, height, "blue"))
+        #     blocks.append(Block(game_width - 10, start_y + r * (height + 1), width, height, "blue"))
+
         return blocks
