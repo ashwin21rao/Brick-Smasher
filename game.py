@@ -157,7 +157,8 @@ class Game:
                 return False
         return True
 
-    # -------------------------------- new methods -------------------------------------
+    # -------------------------------- create sprites -------------------------------------
+
     def createBlocks(self):
         self.blocks = self.level.getBlocks()
 
@@ -230,7 +231,18 @@ class Game:
 
         return hit
 
-    # ---------------------------------------- activate/deactivate powerups --------------------------
+    def moveFallingSprites(self, sprite_list):
+        for sprite in sprite_list:
+            sprite.move(self.game_window)
+            if sprite.powerUpMissed(self.height):
+                self.renderAndRemove(sprite_list, sprite)
+                break
+            elif sprite.ready(self.paddle):
+                self.activatePowerUp(sprite)
+                self.renderAndRemove(sprite_list, sprite)
+                break
+
+    # --------------------------------- activate/deactivate powerups --------------------------
 
     def activatePowerUp(self, power_up):
         self.addPowerUpScore()

@@ -9,19 +9,6 @@ from rawterminal import RawTerminal as rt
 game = Game()
 
 
-def moveFallingSprites(sprite_list):
-    for sprite in sprite_list:
-        sprite.move(game.game_window)
-        if sprite.powerUpMissed(game.game_window.shape[0]):
-            game.renderAndRemove(sprite_list, sprite)
-            break
-        elif sprite.ready(game.paddle):
-            game.activatePowerUp(sprite)
-            game.renderAndRemove(sprite_list, sprite)
-            break
-
-
-# -------------------------------------------------------------------------------------------------------
 def startScreen():
     game.reset()
     game.renderStartScreen()
@@ -147,21 +134,11 @@ def gameloop():
 
         # move bombs
         if move_bomb_counter == 0:
-            moveFallingSprites(game.bombs)
+            game.moveFallingSprites(game.bombs)
 
         # move power ups
         if move_powerup_counter == 0:
-            moveFallingSprites(game.power_ups)
-
-            # for power_up in game.power_ups:
-            #     power_up.move(game.game_window)
-            #     if power_up.powerUpMissed(game.game_window.shape[0]):
-            #         game.renderAndRemove(game.power_ups, power_up)
-            #         break
-            #     elif power_up.ready(game.paddle):
-            #         game.activatePowerUp(power_up)
-            #         game.renderAndRemove(game.power_ups, power_up)
-            #         break
+            game.moveFallingSprites(game.power_ups)
 
             # deactivate power ups if its time of activation is finished
             game.deactivatePowerUps()
@@ -196,9 +173,6 @@ def gameloop():
                         break
                     elif game.checkCollision(ball):
                         break
-                    # time.sleep(0.1)
-                    # updateDisplay()
-                    # sys.stdout.flush()
 
         # if no more balls left
         if not game.balls:
