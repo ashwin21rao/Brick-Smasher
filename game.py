@@ -249,14 +249,14 @@ class Game:
 
     # --------------------------------- activate/deactivate powerups --------------------------
     def activatePowerUp(self, power_up, update_activation_time=True):
-        self.addPowerUpScore()
-        power_up.playSound(self.sounds["activate_powerup_sound"])
-
         # update activation time of powerup
         if update_activation_time:
             self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
                                         p_up.type != power_up.type}
             self.activated_power_ups[power_up] = datetime.now()
+
+            self.addPowerUpScore()
+            power_up.playSound(self.sounds["activate_powerup_sound"])
 
         if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
             power_up.activate(self.paddle, self.game_window)
