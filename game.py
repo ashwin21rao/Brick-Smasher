@@ -47,7 +47,7 @@ class Game:
         self.reset()
 
     def reset(self):
-        self.level = Level(self.width, 1)
+        self.level = None
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
@@ -78,7 +78,8 @@ class Game:
         self.ticks = int((datetime.now() - self.start_time).total_seconds())
 
     def printScreen(self, full=False):
-        self.screen.printScreen(self.ticks, self.score, self.level.level_num, self.lives, full=full)
+        self.screen.printScreen(self.ticks, self.score, 0 if self.level is None else self.level.level_num,
+                                self.lives, full=full)
 
     def updateScreen(self):
         if not self.boss_level_activated:
@@ -141,6 +142,10 @@ class Game:
         self.lives -= 1
 
     def incrementLevel(self):
+        if self.level is None:
+            self.level = Level(self.width, 1)
+            return
+
         if self.level.level_num + 1 == self.total_levels:
             self.boss_level_activated = True
             # play music
@@ -482,6 +487,8 @@ class Game:
                 self.createUfo()
 
     def advanceLevel(self):
+        self.incrementLevel()
+
         for block in self.blocks:
             block.clearOldPosition(self.game_window)
         for ball in self.balls:

@@ -195,7 +195,6 @@ def gameloop():
         # check if level is complete
         if game.levelComplete(game.blocks) or game.skip_level:
             if game.level.level_num + 1 <= game.total_levels:
-                game.incrementLevel()
                 game.advanceLevel()  # go to next level
             else:
                 game.won = True
