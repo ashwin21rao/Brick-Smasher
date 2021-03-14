@@ -1,7 +1,7 @@
 from sprites import Sprite, SpriteCollisionMixin
 from lasers import Laser
 import copy
-from colorama import Fore, Style
+from colorama import Fore, Style, Back
 import numpy as np
 
 
@@ -16,6 +16,21 @@ class PowerUp(Sprite, SpriteCollisionMixin):
         if self.color is not None:
             self.array[:, 0] = Style.BRIGHT + Fore.__getattribute__(self.color.upper()) + self.array[:, 0]
             self.array[:, self.width-1] = self.array[:, self.width-1] + Fore.RESET + Style.NORMAL
+
+    def render(self, game_window):
+        colors = ["red", "green", "yellow", "blue", "cyan"]
+        render_array = self.array.copy()
+
+        for c in colors:
+            for i in range(0, self.width):
+                if Back.__getattribute__(c.upper()) in game_window[self.y, self.x + i]:
+                    render_array[:, i] = Back.__getattribute__(c.upper()) + render_array[:, i]
+
+        for i in range(0, self.width):
+            if Back.RESET in game_window[self.y, self.x + i]:
+                render_array[:, i] = render_array[:, i] + Back.RESET
+
+        game_window[self.y: self.y + self.height, self.x: self.x + self.width] = render_array
 
     def move(self, game_window):
         # clear old position
