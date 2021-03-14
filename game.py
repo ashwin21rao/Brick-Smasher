@@ -21,7 +21,6 @@ class Game:
         self.FPS = config.FPS
         self.total_levels = config.TOTAL_LEVELS
         self.PowerUpTypes = config.POWER_UP_TYPES
-        self.reset()
 
         self.ball_speed_coefficient = config.INITIAL_BALL_SPEED_COEFFICIENT
         self.powerup_speed_coefficient = config.POWERUP_SPEED_COEFFICIENT
@@ -45,15 +44,17 @@ class Game:
                        "laser_sound": mixer.Sound(config.LASER_SOUND),
                        "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND)}
 
+        self.reset()
+
     def reset(self):
-        self.level = Level(self.width, 6)
+        self.level = Level(self.width, 5)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
         self.ticks = 0
         self.won = False
         self.skip_level = False
-        self.boss_level_activated = True
+        self.boss_level_activated = False
 
         self.activated_power_ups = {}  # power_up -> time of activation
         self.blocks = []
@@ -66,6 +67,9 @@ class Game:
 
         self.time_between_bomb_drops = config.TIME_BETWEEN_BOMB_DROPS
 
+        # play music
+        self.playBackgroundMusic(config.BACKGROUND_MUSIC)
+
     def startTimer(self):
         self.start_time = datetime.now()
         self.ticks = 0
@@ -77,7 +81,7 @@ class Game:
         self.screen.printScreen(self.ticks, self.score, self.level.level_num, self.lives, full=full)
 
     def updateScreen(self):
-        sprite_list = self.blocks + self.lasers + self.power_ups + [self.paddle] + self.balls
+        sprite_list = self.balls + self.blocks + self.lasers + self.power_ups + [self.paddle]
         if self.boss_level_activated:
             sprite_list = [self.ufo] + self.bombs + sprite_list
 
@@ -138,10 +142,12 @@ class Game:
     def incrementLevel(self):
         if self.level.level_num + 1 == self.total_levels:
             self.boss_level_activated = True
+            # play music
+            self.playBackgroundMusic(config.BOSS_BACKGROUND_MUSIC)
+
         self.level = Level(self.width, self.level.level_num + 1)
 
     def levelComplete(self, blocks):
-        # TODO: add boss level logic
         if self.boss_level_activated:
             return self.ufo.lives == 0
 
@@ -357,7 +363,7 @@ class Game:
     def checkPaddleCollision(self, ball):
         collided = ball.handlePaddleCollision(self.paddle, {"paddle_bounce_sound": self.sounds["paddle_sound"],
                                                             "paddle_grab_sound": self.sounds["paddle_grab_sound"]})
-        if collided and self.level.time_attack_activated:
+        if collided and self.level.time_attack_activated and self.blocks:
             self.level.timeAttack(self.game_window, self.blocks, self.sounds["falling_brick_sound"])
 
         return collided
@@ -420,13 +426,13 @@ class Game:
 
     # ------------------------------------------ resetting functions ----------------------------------
 
+    def playBackgroundMusic(self, music):
+        mixer.music.load(music)
+        mixer.music.play(loops=-1)
+
     def init(self):
         rt.enableRawMode()
         rt.hideCursor()
-
-        # play music
-        mixer.music.load(config.BACKGROUND_MUSIC)
-        mixer.music.play(loops=-1)
 
     def renderAndRemove(self, sprite_list, sprite):
         self.updateDisplay()

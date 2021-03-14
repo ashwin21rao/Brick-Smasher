@@ -28,22 +28,22 @@ class Screen:
     def createGameBox(self):
         # vertical lines
         self.screen[self.top_margin - 1: self.rows - self.bottom_margin + 1, self.left_margin - 1] = \
-            Back.RESET + "\u2503"
+            Fore.RESET + Back.RESET + "\u2503"
         self.screen[self.top_margin - 1: self.rows - self.bottom_margin + 1, self.columns - self.right_margin] = \
-            Back.RESET + "\u2503"
+            Fore.RESET + Back.RESET + "\u2503"
 
         # horizontal lines
         self.screen[self.top_margin - 1, self.left_margin - 1: self.columns - self.right_margin + 1] = \
-            Back.RESET + "\u2501"
+            Fore.RESET + Back.RESET + "\u2501"
         self.screen[self.rows - self.bottom_margin, self.left_margin - 1: self.columns - self.right_margin + 1] = \
-            Back.RESET + "\u2501"
+            Fore.RESET + Back.RESET + "\u2501"
 
         # corners
-        self.screen[self.top_margin - 1, self.left_margin - 1] = Back.RESET + "\u250F"
-        self.screen[self.top_margin - 1, self.columns - self.right_margin] = Back.RESET + "\u2513"
-        self.screen[self.rows - self.bottom_margin, self.left_margin - 1] = Back.RESET + "\u2517"
+        self.screen[self.top_margin - 1, self.left_margin - 1] = Fore.RESET + Back.RESET + "\u250F"
+        self.screen[self.top_margin - 1, self.columns - self.right_margin] = Fore.RESET + Back.RESET + "\u2513"
+        self.screen[self.rows - self.bottom_margin, self.left_margin - 1] = Fore.RESET + Back.RESET + "\u2517"
         self.screen[self.rows - self.bottom_margin, self.columns - self.right_margin] = \
-            Back.RESET + "\u251B"
+            Fore.RESET + Back.RESET + "\u251B"
 
     def renderCenterText(self, text, y, back=None, fore=None):
         margin = self.left_margin + (self.width - len(text)) // 2

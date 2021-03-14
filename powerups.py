@@ -1,7 +1,7 @@
 from sprites import Sprite, SpriteCollisionMixin
 from lasers import Laser
 import copy
-from colorama import Fore, Back, Style
+from colorama import Fore, Style
 import numpy as np
 
 

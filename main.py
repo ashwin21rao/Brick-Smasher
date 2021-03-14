@@ -141,9 +141,9 @@ def gameloop():
                 game.level.activateTimeAttack()
 
         # drop bombs if boss level
-        # if drop_bomb_counter == 0:
-        #     if game.boss_level_activated:
-        #         game.createBomb()
+        if drop_bomb_counter == 0:
+            if game.boss_level_activated:
+                game.createBomb()
 
         # move bombs
         if move_bomb_counter == 0:

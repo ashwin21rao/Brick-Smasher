@@ -5,6 +5,7 @@ from powerups import ExpandPaddle, ShrinkPaddle, ThruBall, FireBall, ExplosiveBa
 # sounds
 
 BACKGROUND_MUSIC = "extras/background.ogg"
+BOSS_BACKGROUND_MUSIC = "extras/boss_background.ogg"
 
 REGULAR_BRICK_SOUND = "extras/brick.wav"
 INDESTRUCTIBLE_BRICK_SOUND = "extras/indestructible_brick.wav"
@@ -59,7 +60,7 @@ POWERUP_PROBABILITIES = [0.10, 0.10, 0.06, 0.08, 0.08, 0.10, 0.10, 0.06, 0.0, 0.
 POWERUP_GENERATION_PROBABILITY = 0.10
 POWERUP_ACTIVATION_TIME = 10
 
-TIME_BEFORE_TIME_ATTACK = [120, 120, 240, 240, 240, 600]
+TIME_BEFORE_TIME_ATTACK = [120, 120, 240, 240, 240, 360]
 
 TIME_BETWEEN_LASER_SHOTS = 20
 
