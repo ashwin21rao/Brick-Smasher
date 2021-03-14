@@ -18,6 +18,9 @@ WALL_SOUND = "extras/wall_sound.wav"
 THRU_BALL_SOUND = "extras/thru_ball.wav"
 LASER_SOUND = "extras/laser_sound.wav"
 PADDLE_GRAB_SOUND = "extras/paddle_grab_sound.wav"
+EXTRA_LIFE_SOUND = "extras/extra_life_sound.wav"
+LOSE_LIFE_SOUND = "extras/lose_life_sound.wav"
+UFO_HIT_SOUND = "extras/ufo_hit_sound.wav"
 
 
 # power up types
@@ -55,7 +58,7 @@ RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT = 3
 
 POWERUP_SCORE_THRESHOLD = 20
 POWERUP_PROBABILITIES = [0.10, 0.10, 0.06, 0.08, 0.08, 0.10, 0.10, 0.06, 0.0, 0.10, 0.10, 0.01, 0.11]
-# POWERUP_PROBABILITIES = [0, 0.5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5]
+# POWERUP_PROBABILITIES = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0]
 
 POWERUP_GENERATION_PROBABILITY = 0.10
 POWERUP_ACTIVATION_TIME = 10

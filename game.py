@@ -42,7 +42,10 @@ class Game:
                        "wall_sound": mixer.Sound(config.WALL_SOUND),
                        "thru_ball_sound": mixer.Sound(config.THRU_BALL_SOUND),
                        "laser_sound": mixer.Sound(config.LASER_SOUND),
-                       "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND)}
+                       "paddle_grab_sound": mixer.Sound(config.PADDLE_GRAB_SOUND),
+                       "extra_life_sound": mixer.Sound(config.EXTRA_LIFE_SOUND),
+                       "lose_life_sound": mixer.Sound(config.LOSE_LIFE_SOUND),
+                       "ufo_hit_sound": mixer.Sound(config.UFO_HIT_SOUND)}
 
         self.reset()
 
@@ -256,7 +259,11 @@ class Game:
             self.activated_power_ups[power_up] = datetime.now()
 
             self.addPowerUpScore()
-            power_up.playSound(self.sounds["activate_powerup_sound"])
+
+            if power_up.type == "EXTRA_LIFE":
+                power_up.playSound(self.sounds["extra_life_sound"])
+            else:
+                power_up.playSound(self.sounds["activate_powerup_sound"])
 
         if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
             power_up.activate(self.paddle, self.game_window)
@@ -533,7 +540,7 @@ class Game:
     def checkUfoCollision(self, ball):
         collided = self.boss_level_activated and ball.handleUfoCollision(self.ufo)
         if collided:
-            self.ufo.handleCollision(self.sounds["explosive_brick_sound"])
+            self.ufo.handleCollision(self.sounds["ufo_hit_sound"])
             self.addUfoScore()
 
             if self.ufo.spawn_powerup:
