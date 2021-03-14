@@ -248,15 +248,15 @@ class Game:
                 break
 
     # --------------------------------- activate/deactivate powerups --------------------------
-
-    def activatePowerUp(self, power_up):
+    def activatePowerUp(self, power_up, update_activation_time=True):
         self.addPowerUpScore()
         power_up.playSound(self.sounds["activate_powerup_sound"])
 
         # update activation time of powerup
-        self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
-                                    p_up.type != power_up.type}
-        self.activated_power_ups[power_up] = datetime.now()
+        if update_activation_time:
+            self.activated_power_ups = {p_up: time for p_up, time in self.activated_power_ups.items() if
+                                        p_up.type != power_up.type}
+            self.activated_power_ups[power_up] = datetime.now()
 
         if power_up.type == "EXPAND_PADDLE" or power_up.type == "SHRINK_PADDLE":
             power_up.activate(self.paddle, self.game_window)
@@ -540,7 +540,13 @@ class Game:
                 self.spawnPowerUp(self.ufo)
 
             self.ufo.increaseBombDropFrequency(self)
-            self.blocks.extend(self.ufo.spawnProtectiveBlocks(self.width))
+
+            # spawn protective blocks and apply powerups to them if any
+            new_blocks = self.ufo.spawnProtectiveBlocks(self.width)
+            if new_blocks:
+                self.blocks.extend(new_blocks)
+                for power_up in self.activated_power_ups:
+                    self.activatePowerUp(power_up, update_activation_time=False)
 
         return collided
 
