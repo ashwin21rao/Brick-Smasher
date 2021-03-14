@@ -221,15 +221,19 @@ class PaddleGrab(PowerUp):
         self.initArray("PG")
         self.can_deactivate = True
 
-    def activate(self, balls):
+    def activate(self, balls, paddle):
         for ball in balls:
             ball.enable_paddle_grab = True
 
-    def deactivate(self, balls):
+        paddle.activatePaddleGrab()
+
+    def deactivate(self, balls, paddle):
         for ball in balls:
             ball.enable_paddle_grab = False
             if not ball.launched:
                 ball.launch()
+
+        paddle.deactivatePaddleGrab()
 
 
 class SkipLevel(PowerUp):

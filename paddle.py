@@ -5,15 +5,17 @@ from colorama import Back, Fore
 class Paddle(MovableSprite):
     def __init__(self, x_coordinate, y_coordinate, width, height, color, x_speed=1):
         super().__init__(x_coordinate, y_coordinate, width, height, color, x_speed)
-        self.initArray()
         self.width_without_lasers = self.width
         self.lasers_activated = False
+        self.paddle_grab_activated = False
+        self.initArray()
 
     def initArray(self):
         self.array = np.array([[" " for _ in range(self.width)] for _ in range(self.height)], dtype=object)
 
-        self.array[:, 0] = Back.__getattribute__(self.color.upper()) + " "
-        self.array[:, self.width - 1] = " " + Back.RESET
+        side_design = Fore.CYAN + "\u2503" + Fore.RESET if self.paddle_grab_activated else " "
+        self.array[:, 0] = Back.__getattribute__(self.color.upper()) + side_design
+        self.array[:, self.width - 1] = side_design + Back.RESET
 
     def moveLeft(self, game_window, speed=None):
         super().moveLeft(game_window, speed)
@@ -84,3 +86,17 @@ class Paddle(MovableSprite):
         # reset hitbox
         self.initArray()
         self.initHitBox()
+
+    def activatePaddleGrab(self):
+        self.paddle_grab_activated = True
+
+        offset = 1 if self.lasers_activated else 0
+        self.array[:, offset] = Back.__getattribute__(self.color.upper()) + Fore.CYAN + "\u2503" + Fore.RESET
+        self.array[:, self.width - 1 - offset] = Fore.CYAN + "\u2503" + Fore.RESET + Back.RESET
+
+    def deactivatePaddleGrab(self):
+        self.paddle_grab_activated = False
+
+        offset = 1 if self.lasers_activated else 0
+        self.array[:, offset] = Back.__getattribute__(self.color.upper()) + " "
+        self.array[:, self.width - 1 - offset] = " " + Back.RESET

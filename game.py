@@ -327,7 +327,7 @@ class Game:
                     ball.launch()
 
         elif power_up.type == "PADDLE_GRAB":
-            power_up.activate(self.balls)
+            power_up.activate(self.balls, self.paddle)
 
         elif power_up.type == "SKIP_LEVEL":
             power_up.activate(self)
@@ -348,7 +348,7 @@ class Game:
             elif power_up.type == "FIRE_BALL" or power_up.type == "EXPLOSIVE_BALL":
                 power_up.deactivate(self.blocks)
             elif power_up.type == "PADDLE_GRAB":
-                power_up.deactivate(self.balls)
+                power_up.deactivate(self.balls, self.paddle)
             elif power_up.type == "SKIP_LEVEL":
                 power_up.deactivate(self)
             elif power_up.type == "SHOOT_LASER":
