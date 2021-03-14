@@ -53,9 +53,6 @@ class Paddle(MovableSprite):
         self.changeWidth(game_window, 6)
 
     def activateLasers(self, game_window):
-        if self.lasers_activated:
-            return
-
         self.lasers_activated = True
 
         laser_array = (np.array([[Fore.RED + "\u2503" + Fore.RESET] for _ in range(self.height)], dtype=object))

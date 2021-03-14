@@ -47,7 +47,7 @@ class Game:
         self.reset()
 
     def reset(self):
-        self.level = Level(self.width, 5)
+        self.level = Level(self.width, 1)
         self.lives = config.TOTAL_LIVES
         self.score = 0
         self.start_time = None
@@ -81,9 +81,10 @@ class Game:
         self.screen.printScreen(self.ticks, self.score, self.level.level_num, self.lives, full=full)
 
     def updateScreen(self):
-        sprite_list = self.balls + self.blocks + self.lasers + self.power_ups + [self.paddle]
-        if self.boss_level_activated:
-            sprite_list = [self.ufo] + self.bombs + sprite_list
+        if not self.boss_level_activated:
+            sprite_list = self.blocks + self.lasers + self.power_ups + [self.paddle] + self.balls
+        else:
+            sprite_list = [self.ufo] + self.blocks + self.lasers + self.power_ups + self.bombs + [self.paddle] + self.balls
 
         self.screen.updateScreen(sprite_list)
 

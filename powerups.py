@@ -259,7 +259,8 @@ class ShootLaser(PowerUp):
         self.can_deactivate = True
 
     def activate(self, paddle, game_window):
-        paddle.activateLasers(game_window)
+        if not paddle.lasers_activated:
+            paddle.activateLasers(game_window)
 
     def deactivate(self, paddle, game_window):
         paddle.deactivateLasers(game_window)
