@@ -495,6 +495,7 @@ class Game:
 
     def advanceLevel(self):
         self.incrementLevel()
+        self.skip_level = False
 
         for block in self.blocks:
             block.clearOldPosition(self.game_window)
