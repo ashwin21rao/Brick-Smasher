@@ -56,15 +56,10 @@ class Ball(MovableSprite, SpriteCollisionMixin):
         if self.collidable:
             if self.checkVerticalCollision(block):
                 self.reflectVertical()
-                return True
             elif self.checkHorizontalCollision(block):
                 self.reflectHorizontal()
-                return True
             elif self.checkCornerCollision(block) and self.handleCornerCollision(block):
                 self.reflectHorizontal()
-                return True
-
-        return False
 
     def handlePaddleCollision(self, paddle, paddle_sounds):
         if self.checkHorizontalCollision(paddle) or \
@@ -108,6 +103,19 @@ class Ball(MovableSprite, SpriteCollisionMixin):
             wall_sound.play()
 
         return collided
+
+    def handleUfoCollision(self, ufo):
+        if self.checkVerticalCollision(ufo):
+            self.reflectVertical()
+            return True
+        elif self.checkHorizontalCollision(ufo):
+            self.reflectHorizontal()
+            return True
+        elif self.checkCornerCollision(ufo) and self.handleCornerCollision(ufo):
+            self.reflectHorizontal()
+            return True
+
+        return False
 
     def move(self, game_window, move_y=True):
         # clear old position

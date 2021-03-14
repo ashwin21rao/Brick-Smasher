@@ -372,11 +372,17 @@ class Game:
                 self.addBlockScore(b.original_color, b.invisible_new_color)
         self.blocks = [b for b in self.blocks if b.getStrength() >= 0]
 
-        if spawn_powerup:
+        if spawn_powerup and block.spawn_powerup:
             self.spawnPowerUp(block)
 
     def checkBlockCollision(self, ball):
         collided_blocks = self.spriteCollide(ball, self.blocks)
+        if not collided_blocks:
+            return False
+
+        # remove blocks for which collisions from above are disabled if ball is moving down
+        collided_blocks = [block for block in collided_blocks
+                           if not (block.disable_collision_from_above and ball.y_speed > 0)]
         if not collided_blocks:
             return False
 
@@ -498,22 +504,22 @@ class Game:
 
     # ------------------------ boss level --------------------------------------
 
-    def checkUfoCollision(self, ball, spawn_powerup=True):
-        collided = self.boss_level_activated and ball.handleBlockCollision(self.ufo)
+    def checkUfoCollision(self, ball):
+        collided = self.boss_level_activated and ball.handleUfoCollision(self.ufo)
         if collided:
             self.ufo.handleCollision(self.sounds["explosive_brick_sound"])
             self.addUfoScore()
 
-            if spawn_powerup:
+            if self.ufo.spawn_powerup:
                 self.spawnPowerUp(self.ufo)
 
-            if self.ufo.lives != 0 and self.ufo.lives % 5 == 0:
-                self.time_between_bomb_drops -= 20
+            self.ufo.increaseBombDropFrequency(self)
+            self.blocks.extend(self.ufo.spawnProtectiveBlocks(self.width))
 
         return collided
 
     def createBomb(self):
-        bomb = self.PowerUpTypes["LOSE_LIFE"](self.paddle.x + self.paddle.width // 2, self.ufo.y + self.ufo.height - 1)
+        bomb = self.PowerUpTypes["LOSE_LIFE"](self.paddle.x + self.paddle.width // 2, self.ufo.y + self.ufo.height - 1, color="red")
         self.bombs.append(bomb)
 
     def addUfoScore(self):

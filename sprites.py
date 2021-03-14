@@ -98,13 +98,27 @@ class MovableSprite(Sprite):
 
 # generic sprite with collision checking helper functions
 class SpriteCollisionMixin:
-    def checkHorizontalCollision(self, sprite):
-        return (self.hitbox.y + self.hitbox.height == sprite.hitbox.y and self.y_speed > 0 or self.hitbox.y == sprite.hitbox.y + sprite.hitbox.height and self.y_speed < 0) and \
+    def checkLowerHorizontalCollision(self, sprite):
+        return (self.hitbox.y == sprite.hitbox.y + sprite.hitbox.height and self.y_speed < 0) and \
                (self.hitbox.x + self.hitbox.width - 1 >= sprite.hitbox.x and self.hitbox.x <= sprite.hitbox.x + sprite.hitbox.width - 1)
 
-    def checkVerticalCollision(self, sprite):
-        return (self.hitbox.x + self.hitbox.width == sprite.hitbox.x and self.x_speed > 0 or self.hitbox.x == sprite.hitbox.x + sprite.hitbox.width and self.x_speed < 0) and \
+    def checkUpperHorizontalCollision(self, sprite):
+        return (self.hitbox.y + self.hitbox.height == sprite.hitbox.y and self.y_speed > 0) and \
+               (self.hitbox.x + self.hitbox.width - 1 >= sprite.hitbox.x and self.hitbox.x <= sprite.hitbox.x + sprite.hitbox.width - 1)
+
+    def checkLeftVerticalCollision(self, sprite):
+        return (self.hitbox.x + self.hitbox.width == sprite.hitbox.x and self.x_speed > 0) and \
                (self.hitbox.y + self.hitbox.height - 1 >= sprite.hitbox.y and self.hitbox.y <= sprite.hitbox.y + sprite.hitbox.height - 1)
+
+    def checkRightVerticalCollision(self, sprite):
+        return (self.hitbox.x == sprite.hitbox.x + sprite.hitbox.width and self.x_speed < 0) and \
+               (self.hitbox.y + self.hitbox.height - 1 >= sprite.hitbox.y and self.hitbox.y <= sprite.hitbox.y + sprite.hitbox.height - 1)
+
+    def checkHorizontalCollision(self, sprite):
+        return self.checkLowerHorizontalCollision(sprite) or self.checkUpperHorizontalCollision(sprite)
+
+    def checkVerticalCollision(self, sprite):
+        return self.checkLeftVerticalCollision(sprite) or self.checkRightVerticalCollision(sprite)
 
     def checkCornerCollision(self, sprite):
         return not self.checkHorizontalCollision(sprite) and not self.checkVerticalCollision(sprite)

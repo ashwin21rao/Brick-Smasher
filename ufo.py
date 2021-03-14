@@ -1,6 +1,7 @@
 from sprites import MovableSprite
 import numpy as np
 from colorama import Fore, Style
+from blocks import Block
 import config
 
 
@@ -10,6 +11,7 @@ class Ufo(MovableSprite):
         height = 9
         self.colors = ["blue", "green", "red"]
         self.lives = 15
+        self.spawn_powerup = True
         super().__init__(x_coordinate, y_coordinate, width, height, None, x_speed)
         self.initArray()
 
@@ -57,6 +59,29 @@ class Ufo(MovableSprite):
 
         ufo_sound.play()
 
+    def increaseBombDropFrequency(self, game):
+        if self.lives != 0 and self.lives % 5 == 0:
+            game.time_between_bomb_drops -= 20
+
+    def spawnProtectiveBlocks(self, game_width):
+        blocks = []
+
+        if self.lives == 10 or self.lives == 5:
+            color = "yellow" if self.lives == 10 else "red"
+            start_y = 15 if self.lives == 10 else 13
+
+            width = 6
+            height = 1
+            max_horizontal_blocks = 9
+            start_x = (game_width - (max_horizontal_blocks * width) - (max_horizontal_blocks - 1)) // 2
+
+            for c in range(max_horizontal_blocks):
+                block = Block(start_x + c * (width + 1), start_y, width, height, color)
+                block.disableCollisionFromAbove()
+                block.disableSpawnPowerup()
+                blocks.append(block)
+
+        return blocks
 
     # def render(self, game_window):
     #     self.colors.reverse()

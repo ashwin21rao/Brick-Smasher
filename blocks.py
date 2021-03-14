@@ -15,6 +15,8 @@ class Block(Sprite):
         self.kill_on_collision = False
         self.explode_on_collision = False if type != "EXPLOSIVE_BLOCK" else True
         self.invisible_new_color = invisible_new_color
+        self.disable_collision_from_above = False
+        self.spawn_powerup = True
         self.initArray()
 
     def initArray(self):
@@ -30,6 +32,12 @@ class Block(Sprite):
 
     def getStrength(self):
         return self.strength
+
+    def disableCollisionFromAbove(self):
+        self.disable_collision_from_above = True
+
+    def disableSpawnPowerup(self):
+        self.spawn_powerup = False
 
     def handleCollision(self, game_window, blocks):
         # for explosive ball or explosive blocks
