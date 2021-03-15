@@ -1,5 +1,4 @@
 from sprites import Sprite, SpriteCollisionMixin
-import numpy as np
 from colorama import Fore
 
 

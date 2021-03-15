@@ -2,7 +2,6 @@ from sprites import MovableSprite
 import numpy as np
 from colorama import Fore, Style
 from blocks import Block
-import config
 
 
 class Ufo(MovableSprite):
