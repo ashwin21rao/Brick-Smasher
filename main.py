@@ -62,28 +62,14 @@ def gameloop():
     game.init()
 
     # changing speed and delay wrt fps
-    # counters = {"move_ball_counter": 0,
-    #             "move_powerup_counter": 0,
-    #             "move_laser_counter": 0,
-    #             "move_bomb_counter": 0,
-    #             "shoot_laser_counter": 0,
-    #             "drop_bomb_counter": 0,
-    #             "change_rainbow_brick_color_counter": 0,
-    #             "change_ufo_color_counter": 0}
-
-    # to decrease speed of ball, power up, laser, bomb movement on screen wrt FPS
-    move_ball_counter = 0
-    move_powerup_counter = 0
-    move_laser_counter = 0
-    move_bomb_counter = 0
-
-    # delay laser shots, bomb drops
-    shoot_laser_counter = 0
-    drop_bomb_counter = 0
-
-    # to decrease rate of change of color of rainbow bricks, ufo
-    change_rainbow_brick_color_counter = 0
-    change_ufo_color_counter = 0
+    counters = {"move_ball": {"count": 0, "coeff_name": "ball_speed_coefficient"},
+                "move_powerup": {"count": 0, "coeff_name": "powerup_speed_coefficient"},
+                "move_laser": {"count": 0, "coeff_name": "laser_speed_coefficient"},
+                "move_bomb": {"count": 0, "coeff_name": "bomb_speed_coefficient"},
+                "shoot_laser": {"count": 0, "coeff_name": "time_between_laser_shots"},
+                "drop_bomb": {"count": 0, "coeff_name": "time_between_bomb_drops"},
+                "change_rainbow_brick_color": {"count": 0, "coeff_name": "rainbow_brick_color_speed_coefficient"},
+                "change_ufo_color": {"count": 0, "coeff_name": "ufo_color_speed_coefficient"}}
 
     running = True
     started = False
@@ -127,13 +113,13 @@ def gameloop():
                     game.launchBall(char, ball)
 
         # change color of rainbow bricks
-        if change_rainbow_brick_color_counter == 0:
+        if counters["change_rainbow_brick_color"]["count"] == 0:
             for block in game.blocks:
                 if block.type == "RAINBOW_BLOCK":
                     block.changeColor()
 
         # change color of ufo
-        if change_ufo_color_counter == 0:
+        if counters["change_ufo_color"]["count"] == 0:
             if game.boss_level_activated:
                 game.ufo.reverseColors()
 
@@ -144,23 +130,23 @@ def gameloop():
                 game.level.activateTimeAttack()
 
         # drop bombs if boss level
-        if drop_bomb_counter == 0:
+        if counters["drop_bomb"]["count"] == 0:
             if game.boss_level_activated:
                 game.createBomb()
 
         # move bombs
-        if move_bomb_counter == 0:
+        if counters["move_bomb"]["count"] == 0:
             game.moveFallingSprites(game.bombs)
 
         # move power ups
-        if move_powerup_counter == 0:
+        if counters["move_powerup"]["count"] == 0:
             game.moveFallingSprites(game.power_ups)
 
             # deactivate power ups if its time of activation is finished
             game.deactivatePowerUps()
 
         # move lasers and check collision
-        if move_laser_counter == 0:
+        if counters["move_laser"]["count"] == 0:
             for laser in game.lasers:
                 laser.move(game.game_window)
                 if laser.laserMissed():
@@ -171,14 +157,14 @@ def gameloop():
                     break
 
         # shoot lasers if activated
-        if shoot_laser_counter == 0:
+        if counters["shoot_laser"]["count"] == 0:
             for power_up in game.activated_power_ups:
                 if power_up.type == "SHOOT_LASER":
                     game.lasers.extend(power_up.shootLasers(game.paddle, game.sounds["laser_sound"]))
                     break
 
         # move balls and check collisions
-        if move_ball_counter == 0:
+        if counters["move_ball"]["count"] == 0:
             for ball in game.balls:
                 if not ball.launched:
                     continue
@@ -218,14 +204,8 @@ def gameloop():
 
         # update display based on FPS
         game.updateDisplay()
-        move_ball_counter = (move_ball_counter + 1) % game.ball_speed_coefficient
-        move_powerup_counter = (move_powerup_counter + 1) % game.powerup_speed_coefficient
-        move_laser_counter = (move_laser_counter + 1) % game.laser_speed_coefficient
-        move_bomb_counter = (move_bomb_counter + 1) % game.bomb_speed_coefficient
-        change_rainbow_brick_color_counter = (change_rainbow_brick_color_counter + 1) % game.rainbow_brick_color_speed_coefficient
-        change_ufo_color_counter = (change_ufo_color_counter + 1) % game.ufo_color_speed_coefficient
-        shoot_laser_counter = (shoot_laser_counter + 1) % game.time_between_laser_shots
-        drop_bomb_counter = (drop_bomb_counter + 1) % game.time_between_bomb_drops
+        for key in counters.keys():
+            counters[key]["count"] = (counters[key]["count"] + 1) % getattr(game, counters[key]["coeff_name"])
 
         # render based on FPS
         time.sleep(1 / game.FPS)
