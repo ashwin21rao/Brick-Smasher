@@ -62,7 +62,7 @@ class Ufo(MovableSprite):
 
     def increaseBombDropFrequency(self, game):
         if self.lives != 0 and self.lives % 5 == 0:
-            game.time_between_bomb_drops -= 19
+            game.time_between_bomb_drops -= 20
 
     def spawnProtectiveBlocks(self, game_width):
         blocks = []

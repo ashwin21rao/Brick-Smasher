@@ -555,7 +555,8 @@ class Game:
             if new_blocks:
                 self.blocks.extend(new_blocks)
                 for power_up in self.activated_power_ups:
-                    self.activatePowerUp(power_up, update_activation_time=False)
+                    if power_up.type in ["THRU_BALL", "FIRE_BALL", "EXPLOSIVE_BALL"]:
+                        self.activatePowerUp(power_up, update_activation_time=False)
 
         return collided
 
