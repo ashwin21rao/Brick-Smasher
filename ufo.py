@@ -55,13 +55,15 @@ class Ufo(MovableSprite):
     def handleCollision(self, ufo_sound):
         self.lives -= 1
         if self.lives > 0:
+            if self.lives == 5:
+                self.colors = ["blue", "yellow", "red"]
             self.initArray()
 
         ufo_sound.play()
 
     def increaseBombDropFrequency(self, game):
         if self.lives != 0 and self.lives % 5 == 0:
-            game.time_between_bomb_drops -= 18
+            game.time_between_bomb_drops -= 19
 
     def spawnProtectiveBlocks(self, game_width):
         blocks = []
@@ -83,7 +85,6 @@ class Ufo(MovableSprite):
 
         return blocks
 
-    # def render(self, game_window):
-    #     self.colors.reverse()
-    #     self.initArray()
-    #     super().render(game_window)
+    def reverseColors(self):
+        self.colors[0], self.colors[1] = self.colors[1], self.colors[0]
+        self.initArray()

@@ -61,6 +61,16 @@ def endScreen():
 def gameloop():
     game.init()
 
+    # changing speed and delay wrt fps
+    # counters = {"move_ball_counter": 0,
+    #             "move_powerup_counter": 0,
+    #             "move_laser_counter": 0,
+    #             "move_bomb_counter": 0,
+    #             "shoot_laser_counter": 0,
+    #             "drop_bomb_counter": 0,
+    #             "change_rainbow_brick_color_counter": 0,
+    #             "change_ufo_color_counter": 0}
+
     # to decrease speed of ball, power up, laser, bomb movement on screen wrt FPS
     move_ball_counter = 0
     move_powerup_counter = 0
@@ -71,8 +81,9 @@ def gameloop():
     shoot_laser_counter = 0
     drop_bomb_counter = 0
 
-    # to decrease rate of change of color of rainbow bricks
+    # to decrease rate of change of color of rainbow bricks, ufo
     change_rainbow_brick_color_counter = 0
+    change_ufo_color_counter = 0
 
     running = True
     started = False
@@ -120,6 +131,11 @@ def gameloop():
             for block in game.blocks:
                 if block.type == "RAINBOW_BLOCK":
                     block.changeColor()
+
+        # change color of ufo
+        if change_ufo_color_counter == 0:
+            if game.boss_level_activated:
+                game.ufo.reverseColors()
 
         # activate time attack
         if not game.level.time_attack_activated:
@@ -207,6 +223,7 @@ def gameloop():
         move_laser_counter = (move_laser_counter + 1) % game.laser_speed_coefficient
         move_bomb_counter = (move_bomb_counter + 1) % game.bomb_speed_coefficient
         change_rainbow_brick_color_counter = (change_rainbow_brick_color_counter + 1) % game.rainbow_brick_color_speed_coefficient
+        change_ufo_color_counter = (change_ufo_color_counter + 1) % game.ufo_color_speed_coefficient
         shoot_laser_counter = (shoot_laser_counter + 1) % game.time_between_laser_shots
         drop_bomb_counter = (drop_bomb_counter + 1) % game.time_between_bomb_drops
 

@@ -27,6 +27,7 @@ class Game:
         self.laser_speed_coefficient = config.LASER_SPEED_COEFFICIENT
         self.bomb_speed_coefficient = config.BOMB_SPEED_COEFFICIENT
         self.rainbow_brick_color_speed_coefficient = config.RAINBOW_BRICK_COLOR_SPEED_COEFFICIENT
+        self.ufo_color_speed_coefficient = config.UFO_COLOR_SPEED_COEFFICIENT
         self.time_between_laser_shots = config.TIME_BETWEEN_LASER_SHOTS
         self.time_before_time_attack = config.TIME_BEFORE_TIME_ATTACK
         self.time_between_bomb_drops = config.TIME_BETWEEN_BOMB_DROPS
