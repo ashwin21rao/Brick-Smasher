@@ -17,7 +17,7 @@ A take on the classic brick breaking game, in the terminal!
 
 ### Levels
 
-- The game has 5 levels of increasing difficulty.
+- The game has 5 levels of increasing difficulty and a boss level.
 
 ### Settings
 
@@ -42,27 +42,35 @@ A take on the classic brick breaking game, in the terminal!
    - 10% chance to spawn
    - Indefinite (deactivates if SP power-up is obtained)
 2. SP: Shrink Paddle (decrease paddle size) 
-   - 18% chance to spawn
+   - 10% chance to spawn
    - Indefinite (deactivates if EP power-up is obtained)
 3. TB: Thru Ball (ball can go through bricks and destroy them) 
-   - 6.5% chance to spawn
+   - 6% chance to spawn
    - Deactivates after 10 seconds or if FB power-up is obtained
 4. FB: Fire Ball (every brick is destroyed by a single hit) 
-   - 10% chance to spawn
+   - 8% chance to spawn
    - Deactivates after 10 seconds or if TB power-up is obtained
-5. MB: Multiply Balls (each ball on the screen is split into two) 
-   - 11% chance to spawn
+5. EB: Explosive Ball (every brick when hit acts like an explosive brick) 
+   - 8% chance to spawn
+   - Deactivates after 10 seconds or if FB power-up is obtained
+6. MB: Multiply Balls (each ball on the screen is split into two) 
+   - 10% chance to spawn
    - Indefinite
-6. PG: Paddle Grab (balls can be grabbed by the paddle and launched manually) 
+7. PG: Paddle Grab (balls can be grabbed by the paddle and launched manually) 
    - 10% chance to spawn
    - Deactivates after 10 seconds
-7. FB: Fast Ball (increase ball speed) 
-   - 18% chance to spawn
-   - Deactivates after 10 seconds or if SB powerup is obtained
-8. SB: Slow Ball (decrease ball speed) 
+8. SL: Shoot Lasers (lasers shoot from either side of the paddle)
+   - 11% chance to spawn
+   -  Deactivates after 10 seconds
+9. FB: Fast Ball (increase ball speed) 
    - 10% chance to spawn
-   - Deactivates after 10 seconds or if FB powerup is obtained
-9. XL: Extra Life (increases total lives by 1) 
-   - 6% chance to spawn
-10. SK: Skip Level (automatically go to next level) 
+   - Deactivates after 10 seconds or if SB powerup is obtained
+10. SB: Slow Ball (decrease ball speed) 
+    - 10% chance to spawn
+    - Deactivates after 10 seconds or if FB powerup is obtained
+11. XL: Extra Life (increases total lives by 1) 
+    - 6% chance to spawn
+12. LL: Lose Life (decreases total lives by 1) 
+    - 0.5% chance to spawn (spawns as bombs in boss level)
+13. SK: Skip Level (automatically go to next level) 
     - 0.5% chance to spawn
