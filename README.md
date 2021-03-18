@@ -74,3 +74,8 @@ A take on the classic brick breaking game, in the terminal!
     - 0.5% chance to spawn (spawns as bombs in boss level)
 13. SK: Skip Level (automatically go to next level) 
     - 0.5% chance to spawn
+
+#### Time Attack
+
+- After a certain amount of time is spent playing each level, all bricks will start falling down each time the ball
+  hits the paddle. If the bricks reach the paddle, the game is over (all lives are lost).
